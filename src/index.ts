@@ -1,25 +1,9 @@
 import fastify from "fastify";
 
-// interface IQuerystring {
-//     username: string;
-//     password: string;
-//   }
-  
-//   interface IHeaders {
-//     'h-Custom': string;
-//   }
-  
-//   interface IReply {
-//     200: { success: boolean };
-//     302: { url: string };
-//     '4xx': { error: string };
-//   }
-
-
 const server = fastify();
 
 server.get("/", async (request: any, reply: any) => {
-  return 'rahsgfsdfds'
+  return 's'
 });
 
 server.listen({ port: 8000, host: '0.0.0.0' }, (err: any, address: any) => {
