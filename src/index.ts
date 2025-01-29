@@ -18,11 +18,11 @@ import fastify from "fastify";
 
 const server = fastify();
 
-server.get("/", async (request, reply) => {
-  return 'JHDKJASHDKJASKDASJ'
+server.get("/", async (request: any, reply: any) => {
+  return 'rahsgfsdfds'
 });
 
-server.listen({ port: 8000 }, (err, address) => {
+server.listen({ port: 8000, host: '0.0.0.0' }, (err: any, address: any) => {
     if (err) {
       console.error(err);
       process.exit(1);
