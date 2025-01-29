@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsx --watch src/index.ts", 
-    "build": "tsc"
+    "dev": "tsx watch --include src src/index.ts",
+    "start": "tsc && node dist/index.js"
   },
   "keywords": [],
   "author": "",
