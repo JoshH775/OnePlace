@@ -22,7 +22,7 @@ export async function api(path: string, options: APIOptions = defaultOptions) {
   }
   
 
-  const response = await fetch(`http://localhost:8000/api${path}`, fetchOptions);
+  const response = await fetch(`/api${path}`, fetchOptions);
 
   if (response.status === 401) {
     return { status: 401, data: 'Unauthorized' };

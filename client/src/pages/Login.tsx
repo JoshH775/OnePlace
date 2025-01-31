@@ -20,10 +20,6 @@ export default function Login() {
     const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
 
-    const testRequest = async () => {
-        const {status, data} = await api('/rah')
-        console.log(status, data)
-    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -48,7 +44,6 @@ export default function Login() {
         <div className="bg-gray-100 flex-grow flex justify-center items-center">
         <div className="bg-white p-4 shadow-md rounded-md">
             <h1 className="text-2xl font-bold mb-4">Login</h1>
-            <button onClick={testRequest}>Test request</button>
             <form onSubmit={handleSubmit}>
             <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
@@ -59,6 +54,7 @@ export default function Login() {
 
             <button type="submit" className="w-full bg-indigo-600 text-white p-2 rounded-md">Login</button>
             </form>
+            <a href="/api/auth/google" className="w-full bg-red-600 text-white p-2 rounded-md mt-4">Login with Google</a>
         </div>
         </div>
     )
