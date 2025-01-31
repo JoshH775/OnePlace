@@ -3,20 +3,34 @@ import cors from '@fastify/cors'
 import fastifySession from '@fastify/session'
 import fastifyCookie from "@fastify/cookie";
 import LocalStrategy from "passport-local";
-import passport, { Authenticator } from "@fastify/passport";
+import { Authenticator } from "@fastify/passport";
 
 const server = Fastify();
 server.register(cors, {
-  origin: true
+  origin: true,
+  credentials: true
   })
+
 
 const fastifyPassport = new Authenticator()
 
 server.register(fastifyCookie)
-server.register(fastifySession, { secret: process.env.SECRET_KEY! })
+server.register(fastifySession, { secret: process.env.SECRET_KEY!, cookieName: 'sessionId', cookie: {
+  secure: process.env.NODE_ENV === 'prod',
+  httpOnly: true,
+  path: '/',
+} })
 
 server.register(fastifyPassport.initialize())
 server.register(fastifyPassport.secureSession())
+
+fastifyPassport.registerUserSerializer(async (user, request) => user.username); // Store only the email
+fastifyPassport.registerUserDeserializer(async (email, request) => {
+  if (email === "admin") {
+    return { email, password: "admin" };
+  }
+  return null;
+});
 
 const localStrategy = new LocalStrategy.Strategy(function (username, password, done) {
   if (username === 'admin' && password === 'admin') {
@@ -29,13 +43,22 @@ const localStrategy = new LocalStrategy.Strategy(function (username, password, d
 
 fastifyPassport.use('local', localStrategy)
 
-server.post('/login',
-  { preValidation: fastifyPassport.authenticate('local') },
-  async (request) => {
-    console.log('lognn')
-    return request.user
+server.route({
+  method: 'POST',
+  url: '/api/login',
+  preValidation: async (request, reply) => {
+    if (request.isAuthenticated()) {
+      reply.code(400).send({ message: 'Already logged in' })
+      return
+    }
+    // @ts-expect-error
+    await fastifyPassport.authenticate('local', { session: true })(request, reply)
+  },
+  handler: async (request, reply) => {
+    return { message: 'Successfully logged in' }
   }
-)
+})
+
 
 server.listen({ port: 8000, host: '0.0.0.0' }, (err: any, address: any) => {
     if (err) {
