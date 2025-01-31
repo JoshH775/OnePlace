@@ -5,7 +5,8 @@ export default function Layout() {
         <>
             <header className="flex w-full gap-4 border-b border-black">
                 <Link to="/" className="p-4">Home</Link>
-                <Link to="/login" className="p-4">Login</Link>
+                <Link to="/albums" className="p-4">Albums</Link>
+                <button className="p-4">Logout</button>
             </header>
             <Outlet />
         </>
