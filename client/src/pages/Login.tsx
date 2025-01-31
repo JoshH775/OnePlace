@@ -1,26 +1,41 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useAuth } from '../components/AuthProvider'
+import { useNavigate } from "react-router-dom";
+import { api } from "../utils";
+
 
 export default function Login() {
 
-    const email = useRef<HTMLInputElement>(null);
+    const { isAuthenticated, login } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+          navigate('/') 
+        }
+      }, [isAuthenticated, navigate])
+
+
+
+    const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log('Form submitted');
-        console.log(email.current?.value);
-        console.log(password.current?.value);
 
-        await fetch('http://localhost:8000/login', {
+        const {status} = await api('/api/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email.current?.value,
+            body: {
+                username: username.current?.value,
                 password: password.current?.value
-            })
+            }
         })
+
+        if (status === 200 || status === 400) {
+            login();
+            navigate('/');
+        }
+
     }
 
 
@@ -31,7 +46,7 @@ export default function Login() {
             <form onSubmit={handleSubmit}>
             <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                <input ref={email} name="email" id="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
+                <input ref={username} name="email" id="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mt-4">Password</label>
                 <input ref={password} type="password" name="password" id="password" className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
             </div>
