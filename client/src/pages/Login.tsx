@@ -6,7 +6,7 @@ import { api } from "../utils";
 
 export default function Login() {
 
-    const { isAuthenticated, login } = useAuth();
+    const { isAuthenticated, loginContext } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,10 +20,15 @@ export default function Login() {
     const username = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
 
+    const testRequest = async () => {
+        const {status, data} = await api('/rah')
+        console.log(status, data)
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const {status} = await api('/api/login', {
+        const {status} = await api('/auth/login', {
             method: 'POST',
             body: {
                 username: username.current?.value,
@@ -32,7 +37,7 @@ export default function Login() {
         })
 
         if (status === 200 || status === 400) {
-            login();
+            loginContext();
             navigate('/');
         }
 
@@ -43,6 +48,7 @@ export default function Login() {
         <div className="bg-gray-100 flex-grow flex justify-center items-center">
         <div className="bg-white p-4 shadow-md rounded-md">
             <h1 className="text-2xl font-bold mb-4">Login</h1>
+            <button onClick={testRequest}>Test request</button>
             <form onSubmit={handleSubmit}>
             <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
