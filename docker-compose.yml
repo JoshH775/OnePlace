@@ -1,7 +1,6 @@
 services:
   fastify:
     build: .
-    command: npm run dev
     ports:
       - "8000:8000"
     depends_on:
@@ -12,6 +11,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - SECRET_KEY=${SECRET_KEY}
       - DB_URL=${DB_URL}
+    command: npm run start:${MODE}
 
   mysql:
     image: mysql:8
