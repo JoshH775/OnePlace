@@ -15,8 +15,6 @@ server.register(cors, {
 
 const fastifyPassport = new Authenticator()
 
-
-
 server.register(fastifyCookie)
 server.register(fastifySession, { secret: process.env.SECRET_KEY!, saveUninitialized: false, cookieName: 'sessionId', cookie: {
   secure: process.env.NODE_ENV === 'prod',
@@ -27,14 +25,9 @@ server.register(fastifySession, { secret: process.env.SECRET_KEY!, saveUninitial
 server.register(fastifyPassport.initialize())
 server.register(fastifyPassport.secureSession())
 
-// server.addHook('preHandler', async (request, reply) => {
-//   if (!request.session || !request.session.user) {
-//     reply.code(401).send({ message: 'Not authenticated' })
-//   }
-// })
-
 fastifyPassport.registerUserSerializer(async (user, request) => user.username); // Store only the email
 fastifyPassport.registerUserDeserializer(async (email, request) => {
+  console.log('here')
   if (email === "admin") {
     return { email, password: "admin" };
   }
@@ -58,21 +51,17 @@ server.post('/api/auth/login', { preValidation: fastifyPassport.authenticate('lo
 
 server.get('/api/auth/logout', async (request, reply) => {
   request.logOut()
-  request.session.destroy()
+  await request.session.destroy()
+  reply.clearCookie('sessionId', { path: '/' })
   return { message: 'Logged out' }
 })
 
-server.get('/api/rah', async (request, reply) => {
-  return { message: 'Hello' }
-})
-
-server.route({
-  method: 'GET',
-  url: '/api/auth/check-session',
- preValidation: fastifyPassport.authenticate('session'),
-  handler: async (request, reply) => {
-    return { message: 'Session valid' }
+server.get('/api/auth/check-session', async (request, reply) => {
+  if (request.isAuthenticated()) {
+    return { message: 'Logged in' }
   }
+  reply.code(401)
+  return { message: 'Not logged in' }
 })
 
 server.listen({ port: 8000, host: '0.0.0.0' }, (err: any, address: any) => {
