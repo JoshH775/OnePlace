@@ -1,6 +1,3 @@
-import { Navigate } from "react-router-dom"
-
-
 
 type APIOptions = {
     method: string
@@ -12,21 +9,25 @@ const defaultOptions: APIOptions = {
 }
 
 export async function api(path: string, options: APIOptions = defaultOptions) {
-  const response = await fetch(`http://localhost:8000/api${path}`, {
+  const fetchOptions: RequestInit = {
     method: options.method,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(options.body),
     credentials: 'include'
-  })
+  };
 
-  const status = response.status
-  const data = await response.json()
+  if (options.body) {
+    fetchOptions.body = JSON.stringify(options.body);
+    fetchOptions.headers = {
+      'Content-Type': 'application/json'
+    };
+  }
+  
 
-  if (status === 401) {
-    Navigate({ to: '/login' })
+  const response = await fetch(`http://localhost:8000/api${path}`, fetchOptions);
+
+  if (response.status === 401) {
+    return { status: 401, data: 'Unauthorized' };
   }
 
-  return { status, data }
+  return { status: response.status, data: await response.json() };
+
 }
