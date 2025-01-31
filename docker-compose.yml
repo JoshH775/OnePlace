@@ -1,7 +1,6 @@
 services:
   fastify:
     build: .
-    command: npm run dev
     ports:
       - "8000:8000"
     depends_on:
@@ -10,7 +9,11 @@ services:
       - ./src:/app/src
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - SECRET_KEY=${SECRET_KEY}
       - DB_URL=${DB_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    command: npm run start:${MODE}
 
   mysql:
     image: mysql:8
