@@ -19,6 +19,7 @@ server.register(fastifySession, { secret: process.env.SECRET_KEY!, cookieName: '
   secure: process.env.NODE_ENV === 'prod',
   httpOnly: true,
   path: '/',
+  expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 } })
 
 server.register(fastifyPassport.initialize())
@@ -59,6 +60,34 @@ server.route({
   }
 })
 
+server.route({
+  method: 'POST',
+  url: '/api/logout',
+  handler: async (request, reply) => {
+    try {
+      
+      await request.session.destroy()
+      reply.clearCookie('sessionId')
+      return { message: 'Successfully logged out' }
+
+    } catch (err) {
+      console.error('Error during logout:', err)
+      reply.code(500).send({ message: 'Logout failed' })
+    }
+  }
+  
+})
+
+server.route({
+  method: 'GET',
+  url: '/api/check-session',
+  handler: async (request, reply) => {
+    if (request.isAuthenticated()) {
+      return { message: 'Authenticated' }
+    }
+    reply.code(401).send({ message: 'Not authenticated' })
+  }
+})
 
 server.listen({ port: 8000, host: '0.0.0.0' }, (err: any, address: any) => {
     if (err) {
