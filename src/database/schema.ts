@@ -20,6 +20,16 @@ const photosTable = mysqlTable('photos', {
   url: text().notNull(),
 })
 
+const googleIntegrationsTable = mysqlTable('google_integrations', {
+  id: int().autoincrement().primaryKey(),
+  userId: int().references(() => usersTable.id).notNull(),
+  googleId: varchar({length: 255}).notNull(),
+  accessToken: text().notNull(),
+  refreshToken: text().notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+})
+
 // const photosRelations = relations(photosTable, ({ one }) => ({
 //     owner: one(usersTable, {
 //         fields: [photosTable.userId],
@@ -33,6 +43,7 @@ const photosTable = mysqlTable('photos', {
 export {
   usersTable,
   photosTable,
+  googleIntegrationsTable,
 //   usersRelations,
 //   photosRelations,
 }

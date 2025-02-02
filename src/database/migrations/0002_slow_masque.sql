@@ -1,0 +1,1 @@
+ALTER TABLE `google_integrations` ADD `updatedAt` timestamp DEFAULT (now()) NOT NULL;
