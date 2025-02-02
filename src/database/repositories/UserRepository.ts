@@ -29,7 +29,8 @@ export class UsersRepository {
             email: user.email,
             password: user.password,
             provider: user.provider,
-            providerId: user.providerId
+            providerId: user.providerId,
+            createdAt: new Date()
         }
     }
 }
@@ -41,6 +42,7 @@ export type User = {
     password: string | null
     provider: string | null
     providerId: string | null
+    createdAt: Date
 }
 
 type ProtoUser = {
