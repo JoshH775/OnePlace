@@ -6,8 +6,10 @@ import LocalStrategy from "passport-local";
 import GoogleStrategy from "passport-google-oauth20";
 import { Authenticator } from "@fastify/passport";
 import { User, UsersRepository } from "./database/repositories/UserRepository";
+import { GoogleIntegrationRepository } from "./database/repositories/GoogleIntegrationRepository";
 
 const Users = new UsersRepository();
+const GoogleIntegrations = new GoogleIntegrationRepository();
 
 const server = Fastify();
 server.register(cors, {
@@ -71,8 +73,12 @@ const googleStrategy = new GoogleStrategy.Strategy(
         providerId: profile.id,
       });
     }
-    return done(null, user);
+
+    if (!await GoogleIntegrations.findByUserId(user.id)) {
+      await GoogleIntegrations.createIntegrationForUser(user.id, profile.id, accessToken, refreshToken);
   }
+  return done(null, user);
+}
 );
 
 fastifyPassport.use("google", googleStrategy);
@@ -96,9 +102,11 @@ server.get("/api/auth/logout", async (request, reply) => {
 server.get(
   "/api/auth/google",
   {
+    // @ts-expect-error-2769 (For some reason accessType is not defined on the type, but is functional.)
     preValidation: fastifyPassport.authenticate("google", {
-      scope: ["profile", "email"],
-    }),
+      scope: ["profile", "email", "https://www.googleapis.com/auth/photospicker.mediaitems.readonly"],
+      accessType: 'offline',
+    },),
   },
   async (request, reply) => {
     return { message: "Redirecting to Google" };
