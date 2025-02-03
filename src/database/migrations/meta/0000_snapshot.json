@@ -1,11 +1,11 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9cc41f5b-8854-4262-a6e1-911030d98b32",
+  "id": "b76310dc-9f00-4d25-b7a7-ca4aecff3ff7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "photos": {
-      "name": "photos",
+    "google_integrations": {
+      "name": "google_integrations",
       "columns": {
         "id": {
           "name": "id",
@@ -18,22 +18,52 @@
           "name": "userId",
           "type": "int",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "url": {
-          "name": "url",
+        "googleId": {
+          "name": "googleId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accessToken": {
+          "name": "accessToken",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "refreshToken": {
+          "name": "refreshToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "photos_userId_users_id_fk": {
-          "name": "photos_userId_users_id_fk",
-          "tableFrom": "photos",
+        "google_integrations_userId_users_id_fk": {
+          "name": "google_integrations_userId_users_id_fk",
+          "tableFrom": "google_integrations",
           "tableTo": "users",
           "columnsFrom": [
             "userId"
@@ -46,14 +76,21 @@
         }
       },
       "compositePrimaryKeys": {
-        "photos_id": {
-          "name": "photos_id",
+        "google_integrations_id": {
+          "name": "google_integrations_id",
           "columns": [
             "id"
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "google_integrations_googleId_unique": {
+          "name": "google_integrations_googleId_unique",
+          "columns": [
+            "googleId"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "users": {
@@ -77,21 +114,7 @@
           "name": "password",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "providerId": {
-          "name": "providerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "createdAt": {

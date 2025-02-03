@@ -1,1 +1,0 @@
-ALTER TABLE `google_integrations` MODIFY COLUMN `userId` int NOT NULL;
