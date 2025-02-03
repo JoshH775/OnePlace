@@ -4,9 +4,7 @@ import { int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-cor
 const usersTable = mysqlTable('users', {
   id: int().autoincrement().primaryKey(),
   email: varchar({length: 255}).notNull().unique(),
-  password: text(),
-  provider: text().notNull(),
-  providerId: text(),
+  password: text().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
 })
 
@@ -14,16 +12,16 @@ const usersTable = mysqlTable('users', {
 //     photos: many(photosTable)
 // }))
 
-const photosTable = mysqlTable('photos', {
-  id: int().autoincrement().primaryKey(),
-  userId: int().references(() => usersTable.id),
-  url: text().notNull(),
-})
+// const photosTable = mysqlTable('photos', {
+//   id: int().autoincrement().primaryKey(),
+//   userId: int().references(() => usersTable.id),
+//   url: text().notNull(),
+// })
 
 const googleIntegrationsTable = mysqlTable('google_integrations', {
   id: int().autoincrement().primaryKey(),
   userId: int().references(() => usersTable.id).notNull(),
-  googleId: varchar({length: 255}).notNull(),
+  googleId: varchar({length: 255}).notNull().unique(),
   accessToken: text().notNull(),
   refreshToken: text().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
@@ -42,7 +40,7 @@ const googleIntegrationsTable = mysqlTable('google_integrations', {
 
 export {
   usersTable,
-  photosTable,
+  // photosTable,
   googleIntegrationsTable,
 //   usersRelations,
 //   photosRelations,

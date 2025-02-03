@@ -12,6 +12,14 @@ export class GoogleIntegrationRepository {
         return integration ?? null;
     }
 
+    async findByGoogleId(googleId: string): Promise<GoogleIntegration | null> {
+        const integration = await db.query.googleIntegrationsTable.findFirst({
+            where: (integrations, { eq }) => eq(integrations.googleId, googleId),
+        });
+
+        return integration ?? null;
+    }
+
     async createIntegrationForUser(userId: number, googleId: string, accessToken: string, refreshToken: string): Promise<GoogleIntegration> {
         const result = await db.insert(googleIntegrationsTable).values({
             userId: userId,
@@ -28,7 +36,6 @@ export class GoogleIntegrationRepository {
             refreshToken: refreshToken,
             createdAt: new Date(),
             updatedAt: new Date(),
-
         };
     }
 }
