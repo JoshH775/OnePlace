@@ -23,7 +23,7 @@ const googleIntegrationsTable = mysqlTable('google_integrations', {
   userId: int().references(() => usersTable.id).notNull(),
   googleId: varchar({length: 255}).notNull().unique(),
   accessToken: text().notNull(),
-  refreshToken: text().notNull(),
+  refreshToken: text(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 })

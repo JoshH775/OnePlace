@@ -2,8 +2,9 @@
 import { googleIntegrationsTable } from "../schema";
 import { db } from "../initDB";
 import { eq } from "drizzle-orm";
+import { IntegrationRepository } from "./IntegrationUtils";
 
-export class GoogleIntegrationRepository {
+export class GoogleIntegrationRepository implements IntegrationRepository {
 
     integrationName: string = 'google';
 
@@ -49,7 +50,8 @@ export class GoogleIntegrationRepository {
 
         const encodedToken = encodeURIComponent(integration.accessToken);
         const response = await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${encodedToken}`);
-        if (response.status !== 200) {
+
+        if (response.status !== 200 && response.status !== 400) {
             return { status: response.status, message: 'Failed to revoke access token' };
         }
 
@@ -64,7 +66,7 @@ export type GoogleIntegration = {
     userId: number;
     googleId: string;
     accessToken: string;
-    refreshToken: string;
+    refreshToken: string | null;
     createdAt: Date;
     updatedAt: Date;
 }

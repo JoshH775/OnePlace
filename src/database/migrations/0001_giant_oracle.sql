@@ -1,0 +1,1 @@
+ALTER TABLE `google_integrations` MODIFY COLUMN `refreshToken` text;
