@@ -132,9 +132,15 @@ server.get("/api/auth/logout", async (request, reply) => {
 server.get(
   "/api/auth/google",
   {
-    preValidation: (request, reply) => {
+    preValidation: async (request, reply) => {
+      const user = request.user as User;
       if (!request.isAuthenticated()) {
         reply.redirect("http://localhost:3000/login?error=You need to log in first")
+        return
+      }
+
+      if (await GoogleIntegrations.findByUserId(user.id)) {
+        reply.redirect("http://localhost:3000/settings?error=You already have a Google account connected")
         return
       }
 
@@ -159,7 +165,7 @@ server.get(
   "/api/auth/google/callback",
   { preValidation: fastifyPassport.authenticate("google", { session: false }) },
   async (request, reply) => {
-    const redirectUrl = "http://localhost:3000/";
+    const redirectUrl = "http://localhost:3000/settings";
     reply.redirect(redirectUrl);
   }
 );
