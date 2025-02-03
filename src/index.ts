@@ -60,24 +60,29 @@ const googleStrategy = new GoogleStrategy.Strategy(
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackURL: "http://localhost:8000/api/auth/google/callback",
+    passReqToCallback: true,
   },
 
-  async function (accessToken, refreshToken, profile, done) {
-    const email = profile.emails![0].value;
-    let user = await Users.findByEmail(email);
+  async function (request, accessToken, refreshToken, profile, done) {
+    const user = request.user as User;
+    
     if (!user) {
-      user = await Users.create({
-        email: email,
-        password: null,
-        provider: "google",
-        providerId: profile.id,
-      });
+      return done(null, false, { message: "You must log in before connecting your Google account" })
     }
 
-    if (!await GoogleIntegrations.findByUserId(user.id)) {
+    const existingIntegration = await GoogleIntegrations.findByGoogleId(profile.id);
+
+    if (!existingIntegration) {
       await GoogleIntegrations.createIntegrationForUser(user.id, profile.id, accessToken, refreshToken);
-  }
-  return done(null, user);
+      return done(null, user);
+    }
+
+    if (existingIntegration.userId != user.id) {
+      return done(null, false, { message: "This Google account is already connected to another user" });
+    }
+
+    return done(null, user);
+
 }
 );
 
@@ -102,20 +107,34 @@ server.get("/api/auth/logout", async (request, reply) => {
 server.get(
   "/api/auth/google",
   {
-    // @ts-expect-error-2769 (For some reason accessType is not defined on the type, but is functional.)
-    preValidation: fastifyPassport.authenticate("google", {
-      scope: ["profile", "email", "https://www.googleapis.com/auth/photospicker.mediaitems.readonly"],
-      accessType: 'offline',
-    },),
+    preValidation: (request, reply) => {
+      console.log('preHandler')
+      console.log(request.isAuthenticated())
+      if (!request.isAuthenticated()) {
+        reply.redirect("http://localhost:3000/login?error=You need to log in first")
+        return
+      }
+
+      //@ts-expect-error
+      fastifyPassport.authenticate("google", {
+        scope: ["profile", "email", "https://www.googleapis.com/auth/photospicker.mediaitems.readonly"],
+        accessType: "offline",
+      })(request, reply);
+
+    },
+
+    
   },
   async (request, reply) => {
+    // Normally, this won't be reached because the user will be redirected to Google's auth page.
     return { message: "Redirecting to Google" };
   }
 );
 
+
 server.get(
   "/api/auth/google/callback",
-  { preValidation: fastifyPassport.authenticate("google", { session: true }) },
+  { preValidation: fastifyPassport.authenticate("google", { session: false }) },
   async (request, reply) => {
     const redirectUrl = "http://localhost:3000/";
     reply.redirect(redirectUrl);

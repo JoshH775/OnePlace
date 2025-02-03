@@ -53,8 +53,8 @@ export default function Login() {
             </div>
 
             <button type="submit" className="w-full bg-indigo-600 text-white p-2 rounded-md">Login</button>
+            <a href="api/auth/google" className="w-full bg-red-600 text-white p-2 rounded-md mt-4 block text-center">Link account with google</a>
             </form>
-            <a href="/api/auth/google" className="w-full bg-red-600 text-white p-2 rounded-md mt-4">Login with Google</a>
         </div>
         </div>
     )
