@@ -1,3 +1,4 @@
+import { User } from "./types";
 
 type APIOptions = {
     method: string
@@ -8,7 +9,7 @@ const defaultOptions: APIOptions = {
     method: 'GET'
 }
 
-export async function api(path: string, options: APIOptions = defaultOptions) {
+async function req(path: string, options: APIOptions = defaultOptions) {
   const fetchOptions: RequestInit = {
     method: options.method,
     credentials: 'include'
@@ -31,3 +32,29 @@ export async function api(path: string, options: APIOptions = defaultOptions) {
   return { status: response.status, data: await response.json() };
 
 }
+
+async function getUser(): Promise<User | null> {
+    const { data, status } = await req('/user')
+
+    if (status !== 200) {
+        console.error('Failed to get user')
+        return null
+    }
+
+    const user = {
+        id: data.user.id,
+        email: data.user.email,
+        integrations: data.integrations,
+        createdAt: new Date(data.user.createdAt)
+    }
+
+    return user
+}
+
+const api = {
+    req,
+    getUser
+
+}
+
+export default api
