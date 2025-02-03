@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from '../components/AuthProvider'
 import { useNavigate } from "react-router-dom";
-import { api } from "../utils";
-
+import api from '../utils/api'
 
 export default function Login() {
 
@@ -24,7 +23,7 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const {status} = await api('/auth/login', {
+        const {status} = await api.req('/auth/login', {
             method: 'POST',
             body: {
                 email: email.current?.value,

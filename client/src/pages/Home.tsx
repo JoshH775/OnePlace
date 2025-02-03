@@ -1,9 +1,8 @@
-import { api } from "../utils"
-
+import api from "../utils/api"
 export default function Home() {
 
     async function disconnect(){
-        const {status} = await api('/auth/disconnect/google', {
+        const {status} = await api.req('/auth/disconnect/google', {
             method: 'DELETE'
         })
 

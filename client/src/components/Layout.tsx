@@ -1,13 +1,13 @@
 import { Outlet, Link } from "react-router-dom";
-import { api } from "../utils";
 import { useAuth } from "./AuthProvider";
+import api from '../utils/api'
 
 export default function Layout() {
 
     const { logoutContext } = useAuth();
 
     const logout = async () => {
-        await api('/auth/logout', {
+        await api.req('/auth/logout', {
             method: 'get'
         })
         logoutContext();

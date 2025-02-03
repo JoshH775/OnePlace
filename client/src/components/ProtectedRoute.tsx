@@ -7,7 +7,6 @@ type Props = {
 
 const ProtectedRoute = ({ element }: Props) => {
   const { isAuthenticated, isLoading } = useAuth();
-  console.log(isAuthenticated ? 'Authenticated' : 'Not authenticated')
 
   if (isLoading) {
     return null // or a loading spinner component

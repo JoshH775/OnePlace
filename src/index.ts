@@ -7,6 +7,7 @@ import GoogleStrategy from "passport-google-oauth20";
 import { Authenticator } from "@fastify/passport";
 import { User, UsersRepository } from "./database/repositories/UserRepository";
 import { GoogleIntegrationRepository } from "./database/repositories/GoogleIntegrationRepository";
+import { getAllIntegrationsForUser } from "./database/repositories/IntegrationUtils";
 
 const Users = new UsersRepository();
 const GoogleIntegrations = new GoogleIntegrationRepository();
@@ -170,6 +171,12 @@ server.get("/api/auth/check-session", async (request, reply) => {
   reply.code(401);
   return { message: "Not logged in" };
 });
+
+server.get("/api/user", async (request, reply) => {
+  const user = request.user as User;
+  const integrations = await getAllIntegrationsForUser(user.id);
+  return { user, integrations };
+})
 
 server.listen({ port: 8000, host: "0.0.0.0" }, (err: any, address: any) => {
   if (err) {
