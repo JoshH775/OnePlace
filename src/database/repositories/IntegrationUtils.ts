@@ -1,13 +1,23 @@
 import { GoogleIntegrationRepository } from "./GoogleIntegrationRepository"
 
+export class IntegrationRepository {
+    integrationName: string = ''
+    async findByUserId(userId: number): Promise<any> {
+        throw new Error('Method not implemented.')
+    }
+    async deleteIntegrationForUser(userId: number): Promise<any> {
+        throw new Error('Method not implemented.')
+    }
+}
+
 const repositories = [new GoogleIntegrationRepository()]
 
 export async function getAllIntegrationsForUser(userId: number) {
-    const integrations = []
+    const integrations: { [key: string]: any } = {}
     for (const repository of repositories) {
         const integration = await repository.findByUserId(userId)
         if (integration) {
-            integrations.push({ [repository.integrationName]: integration })
+            integrations[repository.integrationName] = integration
         }
     }
     return integrations
