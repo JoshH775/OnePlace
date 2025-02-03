@@ -1,6 +1,7 @@
 
 import { googleIntegrationsTable } from "../schema";
 import { db } from "../initDB";
+import { eq } from "drizzle-orm";
 
 export class GoogleIntegrationRepository {
 
@@ -37,6 +38,22 @@ export class GoogleIntegrationRepository {
             createdAt: new Date(),
             updatedAt: new Date(),
         };
+    }
+    async deleteIntegrationForUser(userId: number): Promise<{ status: number, message: string }> {
+        const integration = await this.findByUserId(userId);
+        if (!integration) {
+            return { status: 404, message: `Integration not found for user id ${userId}` };
+        }
+
+        const encodedToken = encodeURIComponent(integration.accessToken);
+        const response = await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${encodedToken}`);
+        if (response.status !== 200) {
+            return { status: response.status, message: 'Failed to revoke access token' };
+        }
+
+        await db.delete(googleIntegrationsTable).where(eq(googleIntegrationsTable.userId, userId));
+
+        return { status: 200, message: 'Successfully deleted integration' };
     }
 }
 

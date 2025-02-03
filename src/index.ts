@@ -67,6 +67,7 @@ const googleStrategy = new GoogleStrategy.Strategy(
     const user = request.user as User;
     
     if (!user) {
+      console.log('Exit 1')
       return done(null, false, { message: "You must log in before connecting your Google account" })
     }
 
@@ -74,13 +75,16 @@ const googleStrategy = new GoogleStrategy.Strategy(
 
     if (!existingIntegration) {
       await GoogleIntegrations.createIntegrationForUser(user.id, profile.id, accessToken, refreshToken);
+      console.log('Exit 2')
       return done(null, user);
     }
 
     if (existingIntegration.userId != user.id) {
+      console.log('Exit 3')
       return done(null, false, { message: "This Google account is already connected to another user" });
     }
 
+    console.log('Exit 4')
     return done(null, user);
 
 }
@@ -89,6 +93,14 @@ const googleStrategy = new GoogleStrategy.Strategy(
 fastifyPassport.use("google", googleStrategy);
 fastifyPassport.use("local", localStrategy);
 
+server.addHook("preHandler", async (request, reply) => {
+  if (!request.isAuthenticated()){
+    return reply.code(401).send({ message: "Not logged in" });
+  }
+
+  return;
+});
+
 server.post(
   "/api/auth/login",
   { preValidation: fastifyPassport.authenticate("local") },
@@ -96,6 +108,18 @@ server.post(
     return { message: "Successfully logged in" };
   }
 );
+
+server.delete(
+  '/api/auth/disconnect/google',
+  async (request, reply) => {
+    const user = request.user as User;
+    console.log(user)
+
+    const { status, message } = await GoogleIntegrations.deleteIntegrationForUser(user.id);
+    reply.code(status);
+    return { message }
+  }
+)
 
 server.get("/api/auth/logout", async (request, reply) => {
   request.logOut();
@@ -108,8 +132,6 @@ server.get(
   "/api/auth/google",
   {
     preValidation: (request, reply) => {
-      console.log('preHandler')
-      console.log(request.isAuthenticated())
       if (!request.isAuthenticated()) {
         reply.redirect("http://localhost:3000/login?error=You need to log in first")
         return
