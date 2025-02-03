@@ -51,10 +51,18 @@ async function getUser(): Promise<User | null> {
     return user
 }
 
+async function disconnectIntegration(provider: string): Promise<boolean> {
+    const { status } = await req(`/auth/disconnect/${provider}`, {
+        method: 'DELETE'
+    })
+
+    return status === 200
+}
+
 const api = {
     req,
-    getUser
-
+    getUser,
+    disconnectIntegration
 }
 
 export default api
