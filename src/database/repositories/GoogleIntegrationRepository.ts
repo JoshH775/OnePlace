@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 
 export class GoogleIntegrationRepository {
 
+    integrationName: string = 'google';
+
     async findByUserId(userId: number): Promise<GoogleIntegration | null> {
         const integration = await db.query.googleIntegrationsTable.findFirst({
             where: (integrations, { eq }) => eq(integrations.userId, userId),
