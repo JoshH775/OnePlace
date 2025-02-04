@@ -1,6 +1,7 @@
 import { Outlet, Link } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import api from '../utils/api'
+import houseIcon from '../assets/house-icon.svg'
 
 export default function Layout() {
 
@@ -14,14 +15,11 @@ export default function Layout() {
 
     }
     return (
-        <>
-            <header className="flex w-full gap-4 border-b border-black">
-                <Link to="/" className="p-4">Home</Link>
-                <Link to="/albums" className="p-4">Albums</Link>
-                <Link to="/settings" className="p-4">Settings</Link>
-                <button className="p-4" onClick={logout}>Logout</button>
-            </header>
+        <div className="flex flex-grow w-screen">
+            <section className="flex flex-col w-72 border border-r-gray-400 p-2 h-full items-center">
+            <p className="text-2xl flex items-center gap-2"><img src={houseIcon} alt="house" />OnePlace</p>
+            </section>
             <Outlet />
-        </>
+        </div>
     )
 }
