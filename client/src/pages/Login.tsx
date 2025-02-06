@@ -40,14 +40,14 @@ export default function Login() {
 
 
     return (
-        <div className="bg-gray-100 flex-grow flex justify-center items-center">
-        <div className="bg-white p-4 shadow-md rounded-md">
+        <div className="flex-grow flex justify-center items-center">
+        <div className="p-4 shadow-md rounded-md">
             <h1 className="text-2xl font-bold mb-4">Login</h1>
             <form onSubmit={handleSubmit}>
             <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium">Email</label>
                 <input ref={email} name="email" id="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mt-4">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium mt-4">Password</label>
                 <input ref={password} type="password" name="password" id="password" className="mt-1 block w-full px-3 py-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" />
             </div>
 
