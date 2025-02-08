@@ -1,26 +1,42 @@
-import api from "../utils/api"
+import { ArrowUpTrayIcon } from "@heroicons/react/24/outline"
+import Button from "../components/ui/Button"
+import { GoogleIcon, DropboxIcon, OneDriveIcon } from "../components/ui/CustomIcons"
+
+
 export default function Home() {
 
-    async function disconnect(){
-        const {status} = await api.req('/auth/disconnect/google', {
-            method: 'DELETE'
-        })
 
-        if (status === 200) {
-            console.log('Disconnected Google account')
-        }
-    }
+    const noPhotos = true
 
     return (
-        <div className="flex-grow flex justify-center items-center w-full">
-        <div className="p-4 shadow-md rounded-md">
-            <h1 className="text-2xl font-bold mb-4">Hello, Vite + React + Tailwind CSS!</h1>
-            <p className="text-lg">Edit <code>src/pages/Home.tsx</code> and save to test HMR updates.</p>
-            <a href="api/auth/google" className="w-full bg-red-600 text-white p-2 rounded-md mt-4 block text-center">Link account with google</a>
-            
-            <button className="w-full bg-indigo-600 text-white p-2 rounded-md mt-4" onClick={disconnect}>Disconnect Google</button>
+        <div className="content">
+            {noPhotos && <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit w-1/2 rounded-md p-12 max-w-[575px]">
+                <h1 className="text-2xl font-bold">No Photos Yet</h1>
+                <p className="text-center">Import your photos from cloud services or upload them directly to get started!</p>
 
-        </div>
+                <Button onClick={() => { }} variant="outlined">
+                    <GoogleIcon className="h-7"/>
+                    Import from Google Photos
+                </Button>
+
+                <Button onClick={() => { }} variant="outlined">
+                    <DropboxIcon className="h-7"/>
+                    Import from Dropbox
+                </Button>
+
+                <Button onClick={() => { }} variant="outlined">
+                    <OneDriveIcon className="h-7"/>
+                    Import from OneDrive
+                </Button>
+                
+                <hr/>
+
+                <Button onClick={() => { }} >
+                    <ArrowUpTrayIcon className="h-7"/>
+                    Upload Photos
+                </Button>
+            </div>}
+
         </div>
     )
 }
