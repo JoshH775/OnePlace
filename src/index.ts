@@ -5,7 +5,7 @@ import fastifyCookie from "@fastify/cookie";
 import { googleStrategy, localStrategy } from "./authStrategies";
 import { Authenticator } from "@fastify/passport";
 import { User, UsersRepository } from "./database/repositories/UserRepository";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes/routes";
 
 const Users = new UsersRepository();
 
