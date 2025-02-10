@@ -8,7 +8,7 @@ import Layout from './components/Layout'
 import { AuthProvider } from './components/AuthProvider'
 import ProtectedRoute from './components/ProtectedRoute'
 import Settings from './pages/Settings'
-import Search from './pages/Search'
+import Photos from './pages/Photos'
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
     <AuthProvider>
@@ -16,7 +16,8 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path='/' element={<ProtectedRoute element={<Layout />} />}>
           <Route path='/' element={<Home/>} />
-          <Route path='/search' element={<Search />} />
+          <Route path='/collections' element={<Home />} />
+          <Route path='/photos' element={<Photos />} />
           <Route path='/settings' element={<Settings />} />
         </Route>
         <Route path='/login' element={<Login />} />

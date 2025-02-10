@@ -6,6 +6,7 @@ import {
   ArrowRightStartOnRectangleIcon,
   MoonIcon,
   PhotoIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import IconLink from "./ui/IconLink";
 import IconButton from "./ui/IconButton";
@@ -28,7 +29,7 @@ export default function Layout() {
     return (
       <RouterLink
         to={to}
-        className={"flex items-center gap-2 p-1 rounded-md " + bgClass}
+        className={"flex items-center gap-2 p-[6px] rounded-md " + bgClass}
         onClick={() => setPathname(to)}
       >
         <div className="flex gap-2">
@@ -81,8 +82,18 @@ export default function Layout() {
           <div className="gap-2 flex flex-col">
             <Link
               to="/"
-              text="All Photos"
+              text="Home"
+              icon={<HomeIcon className="w-6 h-6" />}
+            />
+            <Link
+              to="/photos"
+              text="Photos"
               icon={<PhotoIcon className="w-6 h-6" />}
+            />
+            <Link
+              to="/collections"
+              text="Collections"
+              icon={<FolderIcon className="w-6 h-6" />}
             />
             <Link
               to="/settings"
