@@ -7,6 +7,7 @@ import {
   MoonIcon,
   PhotoIcon,
   HomeIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import IconLink from "./ui/IconLink";
 import IconButton from "./ui/IconButton";
@@ -56,49 +57,36 @@ export default function Layout() {
 
   return (
     <>
-      <header className="flex py-4 px-4 justify-between shadow-md items-center text-3xl dark:bg-onyx-light z-10">
-        <IconLink
-          to="/"
-          icon={<FolderIcon className="h-[1.875rem]" />}
-          text="OnePlace"
-          className="w-72 font-semibold justify-start"
-        />
-
-        <SearchBar />
-
-        <IconLink
-          to="/settings"
-          icon={
-            <Cog6ToothIcon className="h-[1.875rem] hover:rotate-45 rounded-full transition-transform duration-150 mx-1" />
-          }
-        />
-        <IconButton
-          onClick={toggleDarkMode}
-          icon={<MoonIcon className="h-[1.875rem] mx-1" />}
-        />
-      </header>
       <div className="flex flex-grow w-full">
         <section className="w-72 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 justify-between">
+
           <div className="gap-2 flex flex-col">
+            <RouterLink
+              to='/'
+              className="text-3xl text-center font-semibold flex gap-2 items-center my-2">
+                <ShieldCheckIcon className="w-10"/>
+                OnePlace
+              </RouterLink>
+
             <Link
               to="/"
               text="Home"
-              icon={<HomeIcon className="w-6 h-6" />}
+              icon={<HomeIcon className="w-6" />}
             />
             <Link
               to="/photos"
               text="Photos"
-              icon={<PhotoIcon className="w-6 h-6" />}
+              icon={<PhotoIcon className="w-6" />}
             />
             <Link
               to="/collections"
               text="Collections"
-              icon={<FolderIcon className="w-6 h-6" />}
+              icon={<FolderIcon className="w-6" />}
             />
             <Link
               to="/settings"
               text="Settings"
-              icon={<Cog6ToothIcon className="w-6 h-6" />}
+              icon={<Cog6ToothIcon className="w-6" />}
             />
           </div>
 
