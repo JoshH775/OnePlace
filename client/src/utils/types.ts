@@ -16,3 +16,15 @@ export type GoogleIntegration = {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export type Photo = {
+    id: number;
+    userId: number;
+    fileName: string;
+    size: number;
+    alias: string | null;
+    url: string;
+    googleId: string | null;
+    dropboxId: string | null;
+    
+}

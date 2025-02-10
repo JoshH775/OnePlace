@@ -1,4 +1,4 @@
-import { User } from "./types";
+import { Photo, User } from "./types";
 
 type APIOptions = {
   method: string;
@@ -57,16 +57,36 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
   return status === 200;
 }
 
-//Google stuff
-
-async function openPickSession(){
-  
+async function getPhotos(): Promise<Photo[]> {
+  return [
+    {
+      id: 1,
+      userId: 1,
+      url: "https://brandingforthepeople.com/wp-content/uploads/2019/04/Stock-Photography-vs-Real-Imagery.jpg",
+      fileName: 'Stock-Photography-vs-Real-Imagery.jpg',
+      googleId: null,
+      dropboxId: null,
+      size: 1000,
+      alias: null
+    },
+    {
+      id: 2,
+      userId: 1,
+      url: "https://media.istockphoto.com/id/1587604256/photo/portrait-lawyer-and-black-woman-with-tablet-smile-and-happy-in-office-workplace-african.jpg?s=612x612&w=0&k=20&c=n9yulMNKdIYIQC-Qns8agFj6GBDbiKyPRruaUTh4MKs=",
+      fileName: 'portrait-lawyer-and.jpg',
+      size: 1000,
+      alias: null,
+      googleId: null,
+      dropboxId: "456",
+    }
+  ]
 }
 
 const api = {
   req,
   getUser,
   disconnectIntegration,
+  getPhotos
 };
 
 export default api;
