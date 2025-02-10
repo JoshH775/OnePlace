@@ -14,7 +14,7 @@ export default function Home() {
     }
 
     return (
-        <div className="content">
+        <div className="content w-full">
             {noPhotos && <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit w-1/2 rounded-md p-12 max-w-[575px]">
                 <h1 className="text-2xl font-bold">No Photos Yet</h1>
                 <p className="text-center">Import your photos from cloud services or upload them directly to get started!</p>
@@ -24,17 +24,21 @@ export default function Home() {
                     Import from Google Photos
                 </Button>
 
-                <Button onClick={() => { }} variant="outlined">
+                <Button onClick={() => { }} variant="outlined" disabled>
                     <DropboxIcon className="h-7"/>
                     Import from Dropbox
                 </Button>
 
-                <Button onClick={() => { }} variant="outlined">
+                <Button onClick={() => { }} variant="outlined" disabled>
                     <OneDriveIcon className="h-7"/>
                     Import from OneDrive
                 </Button>
                 
-                <hr/>
+                <div className="flex items-center gap-3 w-full">
+                    <hr className="w-1/2"/>
+                    <p className="text-gray-500">OR</p>
+                    <hr className="w-1/2"/>
+                </div>
 
                 <Button onClick={() => { }} >
                     <ArrowUpTrayIcon className="h-7"/>
