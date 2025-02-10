@@ -5,18 +5,20 @@ async function createPickerSession() {
     const { status, data } = await api.req("/google/picker");
 
     if (status !== 200) {
+        if (status === 401) {
+            console.error("Google integration not enabled");
+        }
         console.error("Failed to open picker session");
         return null;
     }
 
-    return data.config;
+    return data;
 }
 
 
 export async function importFromGoogle() {
     const session = await createPickerSession()
-    console.log('Session:', session);
-
+    console.log(session)
     if (!session) return
 
     const link = document.createElement("a");
@@ -30,33 +32,40 @@ export async function importFromGoogle() {
 
 
 
+    //returns false if media items are not set, true if media items are set
     const pollSession = async () => {
-        const { status, data } = await api.req('/google/picker/poll', {
+        const pollRequest = await api.req('/google/picker/poll', {
             method: 'POST',
             body: { sessionId: session.id }
         });
 
-        if (status !== 200) {
+        if (pollRequest.status !== 200) {
             console.error('Failed to poll session');
             return;
         }
 
-        console.log('Polling session:', data);
+        console.log('Polling session:', pollRequest.data);
 
-        // Check if the media items are set
-        if (data.mediaItemsSet) {
-            console.log('Media items set:', data);
+        if (pollRequest.data.mediaItemsSet) {
+            console.log('Media items set:', pollRequest.data);
 
+
+            const mediaReq = await api.req('/google/picker/media', {
+                method: 'POST',
+                body: { sessionId: session.id }
+            });
+        
+            console.log(mediaReq.data)
             // If media items are set, delete the session
             await api.req('/google/picker/delete', {
                 method: 'DELETE',
                 body: { sessionId: session.id }
             });
 
-            return true; // Return true if media items are set
+            return true; 
         }
 
-        return false; // Return false if media items are not yet set
+        return false; 
     };
         
     const intervalTime = 5000
@@ -80,6 +89,10 @@ export async function importFromGoogle() {
 
         await new Promise((resolve) => setTimeout(resolve, intervalTime));
     }
+
+    //get media items
+
+
 
 
    

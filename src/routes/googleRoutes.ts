@@ -1,54 +1,101 @@
 import { FastifyInstance } from "fastify";
 import { User } from "../database/repositories/UserRepository";
-import { GoogleIntegrationRepository } from "../database/repositories/GoogleIntegrationRepository";
+import {
+  GoogleIntegration,
+  GoogleIntegrationRepository,
+} from "../database/repositories/GoogleIntegrationRepository";
 
 const GoogleIntegrations = new GoogleIntegrationRepository();
+
+async function fetchGooglePickerAPI(
+  endpoint: string,
+  method: string,
+  token: string,
+  body?: object,
+  queryParams?: Record<string, string>
+) {
+
+  const url = new URL(`https://photospicker.googleapis.com/v1/${endpoint}`);
+  if (queryParams) {
+    Object.keys(queryParams).forEach(key => url.searchParams.append(key, queryParams[key]));
+  }
+
+  console.log(url.toString());
+
+  const response = await fetch(
+    url.toString(),
+    {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    }
+  );
+
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      message: responseData.message || "Google API error",
+      data: responseData,
+    };
+  }
+
+  return responseData;
+}
+
+async function getValidAccessToken(userId: number) {
+  let integration = await GoogleIntegrations.findByUserId(userId);
+  if (!integration) throw { status: 401, message: "Google not connected" };
+
+  let { accessToken } = integration as GoogleIntegration;
+  const isTokenValid = await isAccessTokenValid(accessToken);
+
+  if (!isTokenValid) {
+    await GoogleIntegrations.refreshAccessToken(userId, integration.id);
+    integration = await GoogleIntegrations.findByUserId(userId);
+    if (!integration) throw { status: 401, message: "Google not connected" };
+    accessToken = (integration as GoogleIntegration).accessToken;
+  }
+
+  return accessToken;
+}
+
+async function isAccessTokenValid(token: string): Promise<boolean> {
+  const response = await fetch(
+    "https://www.googleapis.com/oauth2/v1/tokeninfo",
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.ok;
+}
 
 export function registerGoogleRoutes(server: FastifyInstance) {
   server.delete("/api/auth/disconnect/google", async (request, reply) => {
     const user = request.user as User;
-    console.log(user);
 
     const { status, message } =
       await GoogleIntegrations.deleteIntegrationForUser(user.id);
-    reply.code(status);
-    return { message };
+    return reply.code(status).send({ message });
   });
 
   server.get("/api/google/picker", async (request, reply) => {
-    const user = request.user as User;
-    const integration = await GoogleIntegrations.findByUserId(user.id);
-
-    if (!integration) {
-      reply.code(401);
-      return { message: "Google not connected" };
-    }
-
-    const { accessToken } = integration;
-
     try {
-      const response = await fetch("https://photospicker.googleapis.com/v1/sessions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const user = request.user as User;
+      const accessToken = await getValidAccessToken(user.id);
+      const sessionData = await fetchGooglePickerAPI(
+        "sessions",
+        "POST",
+        accessToken
+      );
 
-      const config: PickerSessionConfig = await response.json();
-
-      if (!response.ok) {
-        reply.code(await response.json());
-        return { message: "Failed to create session" };
-      }
-
-      console.log("Session created:", config);
-
-      return { config };
-    } catch (error) {
-      console.error("Error creating session:", error);
-      reply.code(500);
-      return { message: "Internal server error" };
+      return sessionData;
+    } catch (error: any) {
+      console.error(error);
+      return reply.code(error.status || 500).send({ message: error.message });
     }
   });
 
@@ -56,70 +103,57 @@ export function registerGoogleRoutes(server: FastifyInstance) {
     const user = request.user as User;
     const { sessionId } = request.body as { sessionId: string };
 
-    const integration = await GoogleIntegrations.findByUserId(user.id);
+    try {
+      const accessToken = await getValidAccessToken(user.id);
+      const sessionData = await fetchGooglePickerAPI(
+        `sessions/${sessionId}`,
+        "GET",
+        accessToken
+      );
 
-    if (!integration) {
-      reply.code(401);
-      return { message: "Google not connected" };
+      return sessionData;
+    } catch (error: any) {
+      console.error(error);
+      return reply.code(error.status || 500).send({ message: error.message });
     }
-
-    const { accessToken } = integration;
-
-    const response = await fetch(`https://photospicker.googleapis.com/v1/sessions/${sessionId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const sessionData = await response.json();
-
-    if (!response.ok) {
-      reply.code(response.status);
-      console.log(sessionData);
-      return { message: "Failed to poll session" };
-    }
-
-    console.log("Session data:", sessionData);
-
-    return sessionData;
   });
 
   server.delete("/api/google/picker/delete", async (request, reply) => {
     const user = request.user as User;
     const { sessionId } = request.body as { sessionId: string };
 
-    const integration = await GoogleIntegrations.findByUserId(user.id);
+    try {
+      const accessToken = await getValidAccessToken(user.id);
+      await fetchGooglePickerAPI(
+        `sessions/${sessionId}`,
+        "DELETE",
+        accessToken
+      );
 
-    if (!integration) {
-      reply.code(401);
-      return { message: "Google not connected" };
+      return { message: "Session deleted" };
+    } catch (error: any) {
+      console.error(error);
+      return reply.code(error.status || 500).send({ message: error.message });
     }
-
-    const { accessToken } = integration;
-
-    const response = await fetch(`https://photospicker.googleapis.com/v1/sessions/${sessionId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      reply.code(response.status);
-      console.log(await response.json());
-      return { message: "Failed to delete session" };
-    }
-
-    return { message: "Session deleted" };
   });
-}
 
-interface PickerSessionConfig {
-  id: string;
-  pickerUri: string;
-  pollingConfig: object;
-  mediaItemsSet: boolean;
+  server.post("/api/google/picker/media", async (request, reply) => {
+    const user = request.user as User;
+    const { sessionId } = request.body as { sessionId: string };
+
+    try {
+      const accessToken = await getValidAccessToken(user.id);
+      const mediaItems = await fetchGooglePickerAPI(
+        'mediaItems',
+        'GET',
+        accessToken,
+        undefined,
+        { session_id: sessionId}
+      );
+
+      return mediaItems;
+    } catch (error: any) {
+      console.error('Error getting media items', error.data.error.details[1].fieldViolations);
+      return reply.code(error.status || 500).send({ message: error.message });
+  }})
 }
