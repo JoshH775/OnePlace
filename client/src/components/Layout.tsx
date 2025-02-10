@@ -1,6 +1,5 @@
-import { Outlet, Link as RouterLink, useNavigate } from "react-router-dom";
+import { Outlet, Link as RouterLink } from "react-router-dom";
 import { useState } from "react";
-import { Input } from "@headlessui/react";
 import {
   FolderIcon,
   Cog6ToothIcon,
@@ -10,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import IconLink from "./ui/IconLink";
 import IconButton from "./ui/IconButton";
+import SearchBar from "./SearchBar";
 
 interface LinkProps {
   text: string;
@@ -19,8 +19,6 @@ interface LinkProps {
 
 export default function Layout() {
   const [pathname, setPathname] = useState(window.location.pathname);
-
-  const navigate = useNavigate();
 
   const Link = ({ text, to, icon }: LinkProps) => {
     const bgClass =
@@ -65,12 +63,7 @@ export default function Layout() {
           className="w-72 font-semibold justify-start"
         />
 
-        <Input
-          name="search"
-          type="text"
-          placeholder="Search all photos..."
-          className="w-full rounded-3xl p-2 outline-none text-base border border-gray-300 dark:border-onyx-light"
-        />
+        <SearchBar />
 
         <IconLink
           to="/settings"
