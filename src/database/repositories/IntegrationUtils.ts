@@ -12,10 +12,10 @@ export class IntegrationRepository {
 
 const repositories = [new GoogleIntegrationRepository()]
 
-export async function getAllIntegrationsForUser(userId: number) {
+export async function getAllIntegrationsForUser(userId: number, includeTokens = true) {
     const integrations: { [key: string]: any } = {}
     for (const repository of repositories) {
-        const integration = await repository.findByUserId(userId)
+        const integration = await repository.findByUserId(userId, includeTokens)
         if (integration) {
             integrations[repository.integrationName] = integration
         }

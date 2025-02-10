@@ -5,7 +5,7 @@ import { getAllIntegrationsForUser } from "../database/repositories/IntegrationU
 export function registerUserRoutes(server: FastifyInstance) {
   server.get("/api/user", async (request, reply) => {
     const user = request.user as User;
-    const integrations = await getAllIntegrationsForUser(user.id);
+    const integrations = await getAllIntegrationsForUser(user.id, false);
     return { user, integrations };
   });
 }
