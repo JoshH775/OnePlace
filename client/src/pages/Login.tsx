@@ -1,24 +1,25 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useAuth } from "../components/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { user, isLoading, login } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user && !isLoading) {
-      navigate("/");
-    }
-  }, [user, isLoading, navigate]);
-
   const email = useRef<HTMLInputElement>(null);
   const password = useRef<HTMLInputElement>(null);
+
+  if (user && !isLoading) {
+    return <Navigate to="/" />;
+  }
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const success = await login(email.current!.value, password.current!.value);
+    const success = await login(
+      email.current!.value,
+      password.current!.value)
     if (success) {
       navigate("/");
     }

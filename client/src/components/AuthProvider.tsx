@@ -33,16 +33,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     await api.req("/auth/logout");
     queryClient.setQueryData(["user"], null);
-    queryClient.invalidateQueries({ queryKey: ["user"] });
   };
 
   const login = async (email: string, password: string) => {
-    const success = await api.login(email, password);
+    const success = await api.login(email, password)
     if (success) {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      const user = await api.getUser()
+      queryClient.setQueryData(["user"], user)
     }
-    return success;
-  };
+    return success
+  }
 
   return (
     <AuthContext.Provider value={{ user, isLoading, logout, login }}>

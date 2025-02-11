@@ -2,7 +2,6 @@ import {
   Navigate,
   Outlet,
   Link as RouterLink,
-  useNavigate,
   useLocation,
 } from "react-router-dom";
 import {
@@ -14,6 +13,7 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "./AuthProvider";
+import Spinner from "./ui/Spinner";
 
 interface LinkProps {
   text: string;
@@ -41,17 +41,16 @@ const Link = ({ text, to, icon }: LinkProps) => {
 };
 
 export default function Layout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user, logout, isLoading } = useAuth();
 
-  if (!user) {
+  if (isLoading) {
+    return <Spinner />;
+  }
+  
+  if (!user && !isLoading) {
     return <Navigate to="/login" />;
   }
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
 
   // function toggleDarkMode() {
   //   const html = document.querySelector("html");
@@ -101,7 +100,7 @@ export default function Layout() {
           <div className="w-full pt-2 border-t border-gray-300 dark:border-onyx-light">
             <button
               className="cursor-pointer flex w-full gap-2   justify-center items-center bg-red-600 rounded-lg p-2 text-white"
-              onClick={handleLogout}
+              onClick={logout}
             >
               <ArrowRightStartOnRectangleIcon className="h-5" />
               <p>Logout</p>
