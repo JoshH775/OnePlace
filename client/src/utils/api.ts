@@ -35,7 +35,6 @@ async function getUser(): Promise<User | null> {
   const { data, status } = await req("/user");
 
   if (status !== 200) {
-    console.error("Failed to get user");
     return null;
   }
 
@@ -47,6 +46,15 @@ async function getUser(): Promise<User | null> {
   };
 
   return user;
+}
+
+async function login(email: string, password: string): Promise<boolean> {
+  const { status } = await req("/auth/login", {
+    method: "POST",
+    body: { email, password },
+  });
+
+  return status === 200;
 }
 
 async function disconnectIntegration(provider: string): Promise<boolean> {
@@ -86,7 +94,8 @@ const api = {
   req,
   getUser,
   disconnectIntegration,
-  getPhotos
+  getPhotos,
+  login
 };
 
 export default api;

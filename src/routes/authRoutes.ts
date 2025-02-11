@@ -67,11 +67,4 @@ export function registerAuthRoutes(server: FastifyInstance, fastifyPassport: Aut
     }
   );
 
-  server.get("/api/auth/check-session", async (request, reply) => {
-    if (request.isAuthenticated()) {
-      return { message: "Logged in" };
-    }
-    reply.code(401);
-    return { message: "Not logged in" };
-  });
 }

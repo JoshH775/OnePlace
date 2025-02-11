@@ -1,79 +1,52 @@
-import React, { createContext, useState, useContext, useEffect, useMemo } from 'react'
-import { User } from '../utils/types'
-import api from '../utils/api'
+import React, { createContext, useContext } from "react";
+import { User } from "../utils/types";
+import api from "../utils/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type AuthContextType = {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  loginContext: () => void
-  logoutContext: () => void
-}
+  user: User | null;
+  isLoading: boolean;
+  logout: () => void;
+  login: (email: string, password: string) => Promise<boolean>;
+};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  isAuthenticated: false,
-  isLoading: true, // Initially loading
-  loginContext: () => {},
-  logoutContext: () => {}
-})
+  isLoading: true,
+  logout: () => false,
+  login: async () => false,
+});
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+  const queryClient = useQueryClient();
 
-  // Check authentication status on component mount
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const { status } = await api.req('/auth/check-session')
+  const { data: userData, isLoading } = useQuery({
+    queryKey: ["user"],
+    queryFn: api.getUser,
+    refetchOnWindowFocus: false,
+  });
 
-        if (status === 200) {
-          setIsAuthenticated(true)
-          const user = await api.getUser()
-          setUser(user)
-        } else {
-          setIsAuthenticated(false)
-        }
-      } catch (error) {
-        setIsAuthenticated(false)
-      } finally {
-        setIsLoading(false) // Stop loading after checking
-      }
+  const user = userData ?? null;
+
+  const logout = async () => {
+    await api.req("/auth/logout");
+    queryClient.setQueryData(["user"], null);
+    queryClient.invalidateQueries({ queryKey: ["user"] });
+  };
+
+  const login = async (email: string, password: string) => {
+    const success = await api.login(email, password);
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     }
-
-    checkAuthStatus()
-  }, [])
-
-  const loginContext = async () => {
-    setIsAuthenticated(true)
-    const user = await api.getUser()
-    setUser(user)
-
-  }
-
-  const logoutContext = async () => {
-    setIsAuthenticated(false)
-    
-  }
-
-  const authValue = useMemo(
-    () => ({
-      isAuthenticated,
-      isLoading,
-      user,
-      loginContext,
-      logoutContext
-    }),
-    [isAuthenticated, isLoading, user]
-  )
+    return success;
+  };
 
   return (
-    <AuthContext.Provider value={authValue}>
+    <AuthContext.Provider value={{ user, isLoading, logout, login }}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};

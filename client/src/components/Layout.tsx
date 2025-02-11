@@ -1,17 +1,19 @@
-import { Outlet, Link as RouterLink } from "react-router-dom";
-import { useState } from "react";
+import {
+  Navigate,
+  Outlet,
+  Link as RouterLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import {
   FolderIcon,
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
-  MoonIcon,
   PhotoIcon,
   HomeIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
-import IconLink from "./ui/IconLink";
-import IconButton from "./ui/IconButton";
-import SearchBar from "./SearchBar";
+import { useAuth } from "./AuthProvider";
 
 interface LinkProps {
   text: string;
@@ -19,60 +21,66 @@ interface LinkProps {
   icon: React.ReactNode;
 }
 
-export default function Layout() {
-  const [pathname, setPathname] = useState(window.location.pathname);
+const Link = ({ text, to, icon }: LinkProps) => {
+  const { pathname } = useLocation();
+  const bgClass =
+    pathname === to
+      ? "dark:bg-onyx-light"
+      : "transition duration-125 dark:hover:bg-onyx-light ";
+  return (
+    <RouterLink
+      to={to}
+      className={"flex items-center gap-2 p-[6px] rounded-md " + bgClass}
+    >
+      <div className="flex gap-2">
+        {icon}
+        <p>{text}</p>
+      </div>
+    </RouterLink>
+  );
+};
 
-  const Link = ({ text, to, icon }: LinkProps) => {
-    const bgClass =
-      pathname === to
-        ? "dark:bg-onyx-light"
-        : "transition duration-125 dark:hover:bg-onyx-light ";
-    return (
-      <RouterLink
-        to={to}
-        className={"flex items-center gap-2 p-[6px] rounded-md " + bgClass}
-        onClick={() => setPathname(to)}
-      >
-        <div className="flex gap-2">
-          {icon}
-          <p>{text}</p>
-        </div>
-      </RouterLink>
-    );
+export default function Layout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
   };
 
-  function toggleDarkMode() {
-    const html = document.querySelector("html");
-    if (!html) return;
+  // function toggleDarkMode() {
+  //   const html = document.querySelector("html");
+  //   if (!html) return;
 
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-    } else {
-      html.classList.add("dark");
-    }
-    window.localStorage.theme = html.classList.contains("dark")
-      ? "dark"
-      : "light";
-  }
+  //   if (html.classList.contains("dark")) {
+  //     html.classList.remove("dark");
+  //   } else {
+  //     html.classList.add("dark");
+  //   }
+  //   window.localStorage.theme = html.classList.contains("dark")
+  //     ? "dark"
+  //     : "light";
+  // }
 
   return (
     <>
       <div className="flex flex-grow w-full">
-        <section className="w-72 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 justify-between">
-
+        <section className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 justify-between">
           <div className="gap-2 flex flex-col">
             <RouterLink
-              to='/'
-              className="text-3xl text-center font-semibold flex gap-2 items-center my-2">
-                <ShieldCheckIcon className="w-10"/>
-                OnePlace
-              </RouterLink>
-
-            <Link
               to="/"
-              text="Home"
-              icon={<HomeIcon className="w-6" />}
-            />
+              className="text-3xl text-center font-semibold flex gap-2 items-center my-2"
+            >
+              <ShieldCheckIcon className="w-10" />
+              OnePlace
+            </RouterLink>
+
+            <Link to="/" text="Home" icon={<HomeIcon className="w-6" />} />
             <Link
               to="/photos"
               text="Photos"
@@ -91,7 +99,10 @@ export default function Layout() {
           </div>
 
           <div className="w-full pt-2 border-t border-gray-300 dark:border-onyx-light">
-            <button className="cursor-pointer flex w-full gap-2   justify-center items-center bg-red-600 rounded-lg p-2 text-white">
+            <button
+              className="cursor-pointer flex w-full gap-2   justify-center items-center bg-red-600 rounded-lg p-2 text-white"
+              onClick={handleLogout}
+            >
               <ArrowRightStartOnRectangleIcon className="h-5" />
               <p>Logout</p>
             </button>
