@@ -48,14 +48,21 @@ export default function Photos() {
       </div>
 
       <div id="photos" className="grid grid-cols-4 gap-2 w-full">
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          data.map((photo) => (
-            <img key={photo.id} src={photo.url} alt={photo.filename ?? ""} />
-          ))
-        )}
-      </div>
+  {isLoading ? (
+    <div>Loading...</div>
+  ) : (
+    data.map((photo) => {
+      // Check if the image is a landscape image
+      return (
+        <div 
+          key={photo.id}
+          className="w-full h-60 aspect-square">
+          <img src={photo.url} alt={photo.alias ?? ''} className="w-full h-full object-cover" />
+        </div>
+      );
+    })
+  )}
+</div>
     </div>
   );
 }
