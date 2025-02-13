@@ -27,6 +27,12 @@ hr {
     padding: 0;
 }
 
+.indigo-underline {
+    border-bottom: 2px solid var(--color-indigo);
+    padding-bottom: 0.4rem;
+    display: inline-block;
+}
+
 html {
     color-scheme: light dark;
 }

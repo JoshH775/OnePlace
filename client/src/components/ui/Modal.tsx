@@ -40,7 +40,7 @@ export default function Modal({
             transition={animations.transition}
             className="w-full h-full flex items-center justify-center"
           >
-            <DialogPanel className="bg-white dark:bg-onyx-light rounded-lg p-6 w-1/3 border-gray-300 dark:border-gray-600 border max-w-[600px]">
+            <DialogPanel className="bg-white dark:bg-onyx rounded-lg p-6 w-1/3  max-w-[600px]">
               <div className="flex justify-between items-center mb-3">
                 <DialogTitle className="text-2xl font-bold indigo-underline">
                   {title}
@@ -48,7 +48,7 @@ export default function Modal({
                 <IconButton
                   icon={<XMarkIcon className="h-6" />}
                   onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:hover:!bg-onyx"
                 />
               </div>
               {children}
