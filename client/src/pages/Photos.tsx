@@ -4,20 +4,28 @@ import IconButton from "../components/ui/IconButton";
 import { ArrowsUpDownIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { useQuery } from "@tanstack/react-query";
 import api from "../utils/api";
+import NoPhotos from "../components/NoPhotos";
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
 
-  const filters = {}
+  const filters = {};
   const { data, isLoading } = useQuery({
     queryKey: ["photos", filters],
     queryFn: () => api.getPhotos(filters),
-  })
+  });
   console.log(data);
+
+  if (!data || (data.length === 0 && !isLoading)) {
+    return (
+      <div className="content">
+        <NoPhotos />
+      </div>
+    );
+  }
 
   return (
     <div className="content flex-col !justify-start p-4 gap-3">
-      
       <div id="tools" className="flex items-center w-full">
         <Input
           name="search"
@@ -39,12 +47,12 @@ export default function Photos() {
         />
       </div>
 
-      <div id="photos" className="grid grid-cols-4 gap-2">
+      <div id="photos" className="grid grid-cols-4 gap-2 w-full">
         {isLoading ? (
           <div>Loading...</div>
         ) : (
           data.map((photo) => (
-              <img key={photo.id} src={photo.url} alt={photo.filename ?? ''} />
+            <img key={photo.id} src={photo.url} alt={photo.filename ?? ""} />
           ))
         )}
       </div>
