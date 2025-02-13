@@ -29,8 +29,8 @@ const Link = ({ text, to, icon }: LinkProps) => {
   const { pathname } = useLocation();
   const bgClass =
     pathname === to
-      ? "dark:bg-onyx-light"
-      : "transition duration-125 dark:hover:bg-onyx-light ";
+      ? "bg-gray-200 dark:bg-onyx-light"
+      : "transition duration-125 hover:bg-gray-200 dark:hover:bg-onyx-light ";
   return (
     <RouterLink
       to={to}
