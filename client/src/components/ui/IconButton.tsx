@@ -1,13 +1,18 @@
+import { Button } from "@headlessui/react";
+
 type Props = {
-    icon: React.ReactNode;
-    onClick: () => void;
-    className?: string;
-}
+  icon: React.ReactNode;
+  onClick: () => void;
+  className?: string;
+};
 
 export default function IconButton({ icon, onClick, className }: Props) {
-    return (
-        <button onClick={onClick} className={"flex items-center  text-center rounded-full cursor-pointer justify-center hover:bg-gray-200 transition-colors duration-150 " + className}>
-            {icon}
-        </button>
-    )
+  return (
+    <Button
+      onClick={onClick}
+      className={`flex rounded-full transition-colors duration-150 items-center gap-2 p-1 aspect-square text-onyx dark:text-white hover:bg-gray-200 hover:dark:bg-onyx-light ${className}`}
+    >
+      {icon}
+    </Button>
+  );
 }
