@@ -5,12 +5,10 @@ import {
   FastifyRequest,
   HookHandlerDoneFunction,
 } from "fastify";
-import { GoogleIntegrationRepository } from "../database/repositories/GoogleIntegrationRepository";
 import { registerGoogleRoutes } from "./googleRoutes";
 import { registerAuthRoutes } from "./authRoutes";
 import { registerUserRoutes } from "./userRoutes";
-
-const GoogleIntegrations = new GoogleIntegrationRepository();
+import registerPhotosRoutes from "./photosRoutes";
 
 export function registerRoutes(
   server: FastifyInstance,
@@ -29,6 +27,7 @@ export function registerRoutes(
   registerGoogleRoutes(server);
   registerAuthRoutes(server, fastifyPassport);
   registerUserRoutes(server);
+  registerPhotosRoutes(server);
 
 }
 

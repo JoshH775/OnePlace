@@ -71,9 +71,8 @@ async function getPhotos(): Promise<Photo[]> {
       id: 1,
       userId: 1,
       url: "https://brandingforthepeople.com/wp-content/uploads/2019/04/Stock-Photography-vs-Real-Imagery.jpg",
-      fileName: 'Stock-Photography-vs-Real-Imagery.jpg',
+      filename: 'Stock-Photography-vs-Real-Imagery.jpg',
       googleId: null,
-      dropboxId: null,
       size: 1000,
       alias: null
     },
@@ -81,13 +80,19 @@ async function getPhotos(): Promise<Photo[]> {
       id: 2,
       userId: 1,
       url: "https://media.istockphoto.com/id/1587604256/photo/portrait-lawyer-and-black-woman-with-tablet-smile-and-happy-in-office-workplace-african.jpg?s=612x612&w=0&k=20&c=n9yulMNKdIYIQC-Qns8agFj6GBDbiKyPRruaUTh4MKs=",
-      fileName: 'portrait-lawyer-and.jpg',
+      filename: 'portrait-lawyer-and.jpg',
       size: 1000,
       alias: null,
       googleId: null,
-      dropboxId: "456",
     }
   ]
+}
+
+async function uploadPhotoFromUrl(url: string): Promise<void> {
+  await req("/photos/upload-url", {
+    method: "POST",
+    body: { url },
+  });
 }
 
 const api = {
@@ -95,7 +100,8 @@ const api = {
   getUser,
   disconnectIntegration,
   getPhotos,
-  login
+  login,
+  uploadPhotoFromUrl,
 };
 
 export default api;
