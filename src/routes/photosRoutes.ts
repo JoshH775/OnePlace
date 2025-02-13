@@ -5,7 +5,7 @@ import { User } from "../database/repositories/UserRepository";
 const Photos = new PhotosRepository();
 
 export default function registerPhotosRoutes(server: FastifyInstance) {
-    server.get("/api/photos", async (request, reply) => {
+    server.post("/api/photos", async (request, reply) => {
         const user = request.user as User
         const photos = await Photos.getAllPhotosForUser(user.id);
         return photos;
