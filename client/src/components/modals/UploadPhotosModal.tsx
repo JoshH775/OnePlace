@@ -3,7 +3,7 @@ import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { TabPanel, Tabs } from "../ui/Tabs";
 import { useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../utils/api";
 
 type Props = {
@@ -13,6 +13,8 @@ type Props = {
 
 export default function UploadPhotosModal({isOpen, onClose}: Props) {
     const [selectedTab, setSelectedTab] = useState(0);
+
+    const queryClient = useQueryClient();
 
     const urlRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +32,8 @@ export default function UploadPhotosModal({isOpen, onClose}: Props) {
 
             if (urlRef.current?.value){
                 await api.uploadPhotoFromUrl(urlRef.current.value)
+                queryClient.invalidateQueries({ queryKey: ["photos"] })
+                onClose()
             } else {
                 console.error("No URL provided")
             }
