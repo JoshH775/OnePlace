@@ -14,12 +14,14 @@ const usersTable = mysqlTable('users', {
 
 const photosTable = mysqlTable('photos', {
   id: int().autoincrement().primaryKey(),
-  userId: int().references(() => usersTable.id),
+  userId: int().references(() => usersTable.id).notNull(),
   url: text().notNull(),
-  filename: text().notNull(),
-  size: int().notNull(),
+  filename: text(),
+  size: int(),
   alias: varchar({length: 255}),
   googleId: varchar({length: 255}).unique(),
+  createdAt: timestamp().defaultNow().notNull(),
+  lastAccessed: timestamp().defaultNow().notNull(),
 })
 
 const googleIntegrationsTable = mysqlTable('google_integrations', {

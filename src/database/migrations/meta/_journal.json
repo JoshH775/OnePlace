@@ -22,6 +22,20 @@
       "when": 1739316683110,
       "tag": "0002_clever_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1739410758255,
+      "tag": "0003_motionless_chamber",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1739412714856,
+      "tag": "0004_flowery_the_fallen",
+      "breakpoints": true
     }
   ]
 }

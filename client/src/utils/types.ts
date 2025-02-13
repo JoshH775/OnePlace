@@ -20,11 +20,10 @@ export type GoogleIntegration = {
 export type Photo = {
     id: number;
     userId: number;
-    fileName: string;
-    size: number;
+    filename: string | null;
+    size: number | null;
     alias: string | null;
     url: string;
     googleId: string | null;
-    dropboxId: string | null;
     
 }
