@@ -11,9 +11,13 @@ import {
   PhotoIcon,
   HomeIcon,
   ShieldCheckIcon,
+  MoonIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "./AuthProvider";
 import Spinner from "./ui/Spinner";
+import Button from "./ui/Button";
+import IconButton from "./ui/IconButton";
 
 interface LinkProps {
   text: string;
@@ -46,31 +50,29 @@ export default function Layout() {
   if (isLoading) {
     return <Spinner />;
   }
-  
+
   if (!user && !isLoading) {
     return <Navigate to="/login" />;
   }
 
+  function toggleDarkMode() {
+    const html = document.querySelector("html");
+    if (!html) return;
 
-  // function toggleDarkMode() {
-  //   const html = document.querySelector("html");
-  //   if (!html) return;
-
-  //   if (html.classList.contains("dark")) {
-  //     html.classList.remove("dark");
-  //   } else {
-  //     html.classList.add("dark");
-  //   }
-  //   window.localStorage.theme = html.classList.contains("dark")
-  //     ? "dark"
-  //     : "light";
-  // }
+    if (html.classList.contains("dark")) {
+      html.classList.remove("dark");
+    } else {
+      html.classList.add("dark");
+    }
+    window.localStorage.theme = html.classList.contains("dark")
+      ? "dark"
+      : "light";
+  }
 
   return (
-    <>
       <div className="flex flex-grow w-full">
-        <section className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 justify-between">
-          <div className="gap-2 flex flex-col">
+        <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 relative">
+          <div className="gap-2 flex flex-col" id="nav-links">
             <RouterLink
               to="/"
               className="text-3xl text-center font-semibold flex gap-2 items-center my-2"
@@ -97,18 +99,41 @@ export default function Layout() {
             />
           </div>
 
-          <div className="w-full pt-2 border-t border-gray-300 dark:border-onyx-light">
-            <button
-              className="cursor-pointer flex w-full gap-2   justify-center items-center bg-red-600 rounded-lg p-2 text-white"
-              onClick={logout}
-            >
-              <ArrowRightStartOnRectangleIcon className="h-5" />
-              <p>Logout</p>
-            </button>
+          <hr />
+
+          <div id="recently-accessed" className="flex flex-col gap-2">
+            
+          <span className="flex gap-2 justify-center items-center">
+            <ClockIcon className="w-6 dark:text-gray-400" />
+            <p className="text-center text-lg font-semibold dark:text-gray-400">
+              Recently Accessed
+            </p>
+          </span>
+
+          </div>
+
+          <div
+            className="w-full p-2 py-1 absolute bottom-0 left-0 "
+            id="logout-button"
+          >
+            <div className="py-1 border-t border-gray-300 dark:border-onyx-light">
+              <Button
+                className="mt-2 bg-red-600 rounded-lg p-2 text-white data-[hover]:bg-red-700"
+                onClick={logout}
+              >
+                <ArrowRightStartOnRectangleIcon className="h-5" />
+                <p>Logout</p>
+              </Button>
+            </div>
           </div>
         </section>
         <Outlet />
+
+        <IconButton
+          icon={<MoonIcon className="w-14 p-2" />}
+          onClick={toggleDarkMode}
+          className="absolute bottom-3 right-3"
+        />
       </div>
-    </>
   );
 }
