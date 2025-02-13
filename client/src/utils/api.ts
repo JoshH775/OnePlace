@@ -25,7 +25,7 @@ async function req(path: string, options: APIOptions = defaultOptions) {
   const response = await fetch(`/api${path}`, fetchOptions);
 
   if (response.status === 401) {
-    window.location.href = "/login";
+    return { status: 401, data: "Unauthorized" };
   }
 
   return { status: response.status, data: await response.json() };
