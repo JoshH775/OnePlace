@@ -9,22 +9,19 @@ export default class PhotosRepository {
     });
   }
 
-  async uploadPhotoFromUrl(userId: number, url: string): Promise<number> {
-    const result = await db.insert(photosTable).values({
-      userId,
-      url,
-    });
+  async uploadPhotos(){}
 
-    return result[0].insertId;
-  }
 }
 
-export type Photo = {
+export interface Photo {
   id: number;
   userId: number;
-  filename: string | null;
-  size: number | null;
-  alias: string | null;
   url: string;
+  filename: string;
+  size: number;
+  alias: string | null;
   googleId: string | null;
-};
+  createdAt: Date;
+  lastAccessed: Date;
+  compressed: number;
+}

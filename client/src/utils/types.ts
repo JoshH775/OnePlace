@@ -17,13 +17,15 @@ export type GoogleIntegration = {
     updatedAt: Date;
 }
 
-export type Photo = {
+export interface Photo {
     id: number;
     userId: number;
-    filename: string | null;
-    size: number | null;
-    alias: string | null;
     url: string;
+    filename: string;
+    size: number;
+    alias: string | null;
     googleId: string | null;
-    
-}
+    createdAt: Date;
+    lastAccessed: Date;
+    compressed: number;
+  }

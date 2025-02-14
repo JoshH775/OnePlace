@@ -66,12 +66,18 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
 }
 
 
+async function uploadPhotos(photos: File[]) {
+  // const formData = new FormData();
+  // photos.forEach((photo) => {
+  //   formData.append("photos", photo);
+  // });
 
-async function uploadPhotoFromUrl(url: string): Promise<void> {
-  await req("/photos/upload-url", {
-    method: "POST",
-    body: { url },
-  });
+  // const { data } = await req("/photos/upload", {
+  //   method: "POST",
+  //   body: formData,
+  // });
+
+  // return data;
 }
 
 async function getPhotos(filters = {}): Promise<Photo[]> {
@@ -89,7 +95,7 @@ const api = {
   disconnectIntegration,
   getPhotos,
   login,
-  uploadPhotoFromUrl,
+  uploadPhotos,
 };
 
 export default api;
