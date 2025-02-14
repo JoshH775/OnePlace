@@ -25,7 +25,7 @@ export default function Photos() {
   }
 
   return (
-    <div className="content flex-col !justify-start p-4 gap-3">
+    <div className="content flex-col !justify-start p-6 gap-3">
       <div id="tools" className="flex items-center w-full">
         <Input
           name="search"
@@ -56,8 +56,8 @@ export default function Photos() {
       return (
         <div 
           key={photo.id}
-          className="w-full h-60 aspect-square">
-          <img src={photo.url} alt={photo.alias ?? ''} className="w-full h-full object-cover" />
+          className=" max-h-60 max-w-80 min-h-60 min-w-40 rounded-lg aspect-square">
+          <img src={photo.url} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" />
         </div>
       );
     })

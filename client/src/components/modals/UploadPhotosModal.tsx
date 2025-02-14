@@ -1,10 +1,9 @@
-import { Input } from "@headlessui/react";
-import Button from "../ui/Button";
 import Modal from "../ui/Modal";
-import { TabPanel, Tabs } from "../ui/Tabs";
-import { useRef, useState } from "react";
+import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDropzone } from "react-dropzone";
 import api from "../../utils/api";
+import ExifReader from 'exifreader';
 
 type Props = {
     isOpen: boolean;
@@ -12,48 +11,49 @@ type Props = {
 }
 
 export default function UploadPhotosModal({isOpen, onClose}: Props) {
-    const [selectedTab, setSelectedTab] = useState(0);
 
     const queryClient = useQueryClient();
 
-    const urlRef = useRef<HTMLInputElement>(null);
 
     const { mutate, isPending } = useMutation({
-        mutationFn: uploadPhotos
+        mutationFn: (acceptedFiles: File[]) => {
+            queryClient.invalidateQueries({queryKey: ["photos"]})
+            return api.uploadPhotos(acceptedFiles)
+        },
     })
 
-    async function uploadPhotos() {
-        console.log("Uploading photos...")
-        if (selectedTab === 0) {
-            console.log("Uploading from file...")
-            
-        } else {
-            console.log("Uploading from link...")
-
-            if (urlRef.current?.value){
-                await api.uploadPhotoFromUrl(urlRef.current.value)
-                queryClient.invalidateQueries({ queryKey: ["photos"] })
-                onClose()
-            } else {
-                console.error("No URL provided")
+    const onDrop = useCallback(async (acceptedFiles: File[]) => {
+        
+        for (const file of acceptedFiles) {
+            if (!file.type.startsWith("image/")) {
+                alert("Only images are allowed")
             }
-        }
+            const tags = await ExifReader.load(file);
+            console.log(tags);
 
-    }
+
+
+        }
+        
+
+        mutate(acceptedFiles)
+    }, [mutate])
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Upload Photos">
             <div className="flex flex-col gap-3">
-                <Tabs tabs={["File Upload", "Link"]} selectedTab={selectedTab} onTabChange={setSelectedTab}>
-                    <TabPanel className="min-h-38">
-                        <input type="file" />
-                    </TabPanel >
-                    <TabPanel className="min-h-38">
-                        <Input type="text" placeholder="Paste link here..." className='w-full p-2 rounded-md' ref={urlRef}/>
-                    </TabPanel>
-                <Button onClick={mutate} className="mt-4" disabled={isPending}>Upload</Button>
-
-                </Tabs>
+                <div {...getRootProps()}>
+                    <input {...getInputProps()} accept=".jpg, .jpeg, .png, .raw" />
+                    <div className="border border-dashed border-gray-300 dark:border-onyx-light rounded-md p-6">
+                        {isDragActive ? (
+                            <p>Drop the files here ...</p>
+                        ) : (
+                            <p>Drag 'n' drop some files here, or click to select files</p>
+                        )}
+                    </div>
+                </div>
             </div>
         </Modal>
     )
