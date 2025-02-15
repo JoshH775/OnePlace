@@ -15,6 +15,34 @@
       "when": 1738591711246,
       "tag": "0001_giant_oracle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1739316683110,
+      "tag": "0002_clever_solo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1739410758255,
+      "tag": "0003_motionless_chamber",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1739412714856,
+      "tag": "0004_flowery_the_fallen",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1739508835071,
+      "tag": "0005_violet_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

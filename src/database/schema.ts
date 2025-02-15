@@ -12,11 +12,18 @@ const usersTable = mysqlTable('users', {
 //     photos: many(photosTable)
 // }))
 
-// const photosTable = mysqlTable('photos', {
-//   id: int().autoincrement().primaryKey(),
-//   userId: int().references(() => usersTable.id),
-//   url: text().notNull(),
-// })
+const photosTable = mysqlTable('photos', {
+  id: int().autoincrement().primaryKey(),
+  userId: int().references(() => usersTable.id).notNull(),
+  url: text().notNull(),
+  filename: text().notNull(),
+  size: int().notNull(),
+  alias: varchar({length: 255}),
+  googleId: varchar({length: 255}).unique(),
+  createdAt: timestamp().defaultNow().notNull(),
+  lastAccessed: timestamp().defaultNow().notNull(),
+  compressed: int().notNull().default(0),
+})
 
 const googleIntegrationsTable = mysqlTable('google_integrations', {
   id: int().autoincrement().primaryKey(),
@@ -40,6 +47,7 @@ const googleIntegrationsTable = mysqlTable('google_integrations', {
 
 export {
   usersTable,
+  photosTable,
   // photosTable,
   googleIntegrationsTable,
 //   usersRelations,
