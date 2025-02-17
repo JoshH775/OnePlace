@@ -43,6 +43,13 @@
       "when": 1739508835071,
       "tag": "0005_violet_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1739660625248,
+      "tag": "0006_mean_skin",
+      "breakpoints": true
     }
   ]
 }
