@@ -28,10 +28,12 @@ export default function UploadPhotosModal({isOpen, onClose}: Props) {
             if (!file.type.startsWith("image/")) {
                 alert("Only images are allowed")
             }
-            const tags = await ExifReader.load(file);
-            console.log(tags);
 
-
+            console.log('rah')
+            const metadata = await ExifReader.load(file);
+            const dimensions = await api.getDimensionsFromFile(file);
+            console.log(metadata);
+            console.log(dimensions);
 
         }
         

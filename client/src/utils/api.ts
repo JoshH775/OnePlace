@@ -1,4 +1,8 @@
+import { getDownloadURL } from "firebase/storage";
 import { Photo, User } from "./types";
+import ExifReader from "exifreader";
+import moment from "moment";
+import { resolve } from "path";
 
 type APIOptions = {
   method: string;
@@ -66,18 +70,74 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
 }
 
 
-async function uploadPhotos(photos: File[]) {
-  // const formData = new FormData();
-  // photos.forEach((photo) => {
-  //   formData.append("photos", photo);
-  // });
+async function uploadPhotos(acceptedFiles: File[]) {
+  // const files = acceptedFiles.map((file) => {
+  //   return { filename: file.name, type: file.type };
+  // })
 
-  // const { data } = await req("/photos/upload", {
+  // const { data: signedUrls } = await req("/photos/generate-signed-url", {
   //   method: "POST",
-  //   body: formData,
+  //   body: { files },
   // });
 
-  // return data;
+  // //firebase upload
+
+  // const uploadPromises = acceptedFiles.map(async (file, index) => {
+   
+  //   const { url } = signedUrls[index];
+  //   const response = await fetch(url, {
+  //     method: "PUT",
+  //     body: file,
+  //   });
+
+  //   if (!response.ok) {
+  //     throw new Error(`Failed to upload ${file.name}`);
+  //   }
+  // });
+
+  // await Promise.all(uploadPromises);
+
+  //Save to db
+
+  // const savePromises = acceptedFiles.map(async (file, index) => {
+  //   const buffer = await new Uint8Array(await file.arrayBuffer());
+  //   const metadata = ExifReader.load(buffer);
+  //   const dimensions = sizeOf(buffer);
+
+  //   const firebasePath = signedUrls[index].path;
+
+  //   const downloadUrl = await getDownloadURL(firebasePath);
+    
+
+  //   let date = null
+  //   if (metadata.DateTime) {
+  //     date = moment(metadata.DateTime.description).toDate()
+  //   } else {
+  //     if (file.lastModified) {
+  //       date = moment(file.lastModified).toDate()
+  //     }
+  //   }
+
+  //   const photo: Omit<Photo, 'userId' | 'id'> = {
+  //     filename: file.name,
+  //     url: downloadUrl,
+  //     createdAt: moment().toDate(),
+  //     lastAccessed: new Date(),
+  //     alias: null,
+  //     compressed: 0,
+  //     size: file.size,
+  //     googleId: null,
+  //     date: date ,
+  //     type: file.type,
+  //     width: metadata.ImageWidth?.value,
+  //     height: metadata.ImageHeight?.value,
+
+  //   };
+
+
+  // })
+
+  console.log("Upload complete");
 }
 
 async function getPhotos(filters = {}): Promise<Photo[]> {
@@ -96,6 +156,27 @@ const api = {
   getPhotos,
   login,
   uploadPhotos,
+  getDimensionsFromFile,
 };
 
 export default api;
+
+
+function getDimensionsFromFile(file: File) {
+  console.log('here');
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    img.onload = () => {
+      resolve({ width: img.width, height: img.height });
+      URL.revokeObjectURL(url); // Revoke the object URL after use
+    };
+    img.onerror = (error) => {
+      console.log('error');
+      console.log(error);
+      reject(error);
+      URL.revokeObjectURL(url); // Revoke the object URL in case of error
+    };
+    img.src = url;
+  });
+}
