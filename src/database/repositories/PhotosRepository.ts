@@ -1,5 +1,5 @@
 import { db } from "../initDB";
-import { photosTable } from "../schema";
+import { Photo, photosTable } from "../schema";
 
 export default class PhotosRepository {
 
@@ -9,19 +9,14 @@ export default class PhotosRepository {
     });
   }
 
-  async uploadPhotos(){}
+  async save(photos: Photo[]) {
+     await db.insert(photosTable).values(photos)
+  }
+
+  async findAllForUser(userId: number): Promise<Photo[]> {
+    return await db.query.photosTable.findMany({
+      where: (photos, { eq }) => eq(photos.userId, userId),
+  })}
 
 }
 
-export interface Photo {
-  id: number;
-  userId: number;
-  url: string;
-  filename: string;
-  size: number;
-  alias: string | null;
-  googleId: string | null;
-  createdAt: Date;
-  lastAccessed: Date;
-  compressed: number;
-}
