@@ -24,6 +24,11 @@ export interface Photo {
     filename: string;
     size: number;
     alias: string | null;
+    type: string;
+    width: number;
+    height: number;
+    location: string | null;
+    date: Date | null;
     googleId: string | null;
     createdAt: Date;
     lastAccessed: Date;
