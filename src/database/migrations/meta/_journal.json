@@ -50,6 +50,20 @@
       "when": 1739660625248,
       "tag": "0006_mean_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1739813577470,
+      "tag": "0007_handy_spyke",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1739894993684,
+      "tag": "0008_lame_bushwacker",
+      "breakpoints": true
     }
   ]
 }
