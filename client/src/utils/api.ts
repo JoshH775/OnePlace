@@ -1,8 +1,5 @@
-import { getDownloadURL } from "firebase/storage";
-import { Photo, User } from "./types";
-import ExifReader from "exifreader";
-import moment from "moment";
-import { resolve } from "path";
+import { Photo, ProtoPhoto, User } from "./types";
+
 
 type APIOptions = {
   method: string;
@@ -70,74 +67,57 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
 }
 
 
-async function uploadPhotos(acceptedFiles: File[]) {
-  // const files = acceptedFiles.map((file) => {
-  //   return { filename: file.name, type: file.type };
-  // })
+async function uploadPhotos(fileData: { file: File, metadata: ProtoPhoto }[]) {
+  try {
+    const files = fileData.map((data) => {
+      return { filename: data.metadata.filename, type: data.metadata.type };
+    });
 
-  // const { data: signedUrls } = await req("/photos/generate-signed-url", {
-  //   method: "POST",
-  //   body: { files },
-  // });
+    const { data: signedUrls } = await req("/photos/generate-signed-url", {
+      method: "POST",
+      body: { files },
+    });
 
-  // //firebase upload
+    // Firebase upload
+    const uploadPromises = fileData.map(async (data, index) => {
+      const { url } = signedUrls[index];
+      const response = await fetch(url, {
+        method: "PUT",
+        body: data.file,
+      });
 
-  // const uploadPromises = acceptedFiles.map(async (file, index) => {
-   
-  //   const { url } = signedUrls[index];
-  //   const response = await fetch(url, {
-  //     method: "PUT",
-  //     body: file,
-  //   });
+      if (!response.ok) {
+        throw new Error(`Failed to upload ${data.metadata.filename}`);
+      }
+    });
 
-  //   if (!response.ok) {
-  //     throw new Error(`Failed to upload ${file.name}`);
-  //   }
-  // });
+    await Promise.all(uploadPromises);
 
-  // await Promise.all(uploadPromises);
+    // Collect photo metadata
+    const photos = await Promise.all(
+      fileData.map(async (data, index) => {
 
-  //Save to db
+        return {
+          ...data.metadata,
+          url: '',
+        };
+      })
+    );
 
-  // const savePromises = acceptedFiles.map(async (file, index) => {
-  //   const buffer = await new Uint8Array(await file.arrayBuffer());
-  //   const metadata = ExifReader.load(buffer);
-  //   const dimensions = sizeOf(buffer);
+    // Save to db
+    const saveResponse = await req("/photos/save", {
+      method: "POST",
+      body: { photos },
+    });
 
-  //   const firebasePath = signedUrls[index].path;
+    if (saveResponse.status !== 200) {
+      throw new Error(`Failed to save photos to the database: ${saveResponse.data}`);
+    }
 
-  //   const downloadUrl = await getDownloadURL(firebasePath);
-    
-
-  //   let date = null
-  //   if (metadata.DateTime) {
-  //     date = moment(metadata.DateTime.description).toDate()
-  //   } else {
-  //     if (file.lastModified) {
-  //       date = moment(file.lastModified).toDate()
-  //     }
-  //   }
-
-  //   const photo: Omit<Photo, 'userId' | 'id'> = {
-  //     filename: file.name,
-  //     url: downloadUrl,
-  //     createdAt: moment().toDate(),
-  //     lastAccessed: new Date(),
-  //     alias: null,
-  //     compressed: 0,
-  //     size: file.size,
-  //     googleId: null,
-  //     date: date ,
-  //     type: file.type,
-  //     width: metadata.ImageWidth?.value,
-  //     height: metadata.ImageHeight?.value,
-
-  //   };
-
-
-  // })
-
-  console.log("Upload complete");
+    console.log("Upload complete");
+  } catch (error) {
+    console.error("Error during photo upload:", error);
+  }
 }
 
 async function getPhotos(filters = {}): Promise<Photo[]> {
