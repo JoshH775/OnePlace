@@ -33,4 +33,4 @@ export type Photo = {
     compressed: number;
   }
 
-  export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'url'>
+  export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>
