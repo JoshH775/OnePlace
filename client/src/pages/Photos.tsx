@@ -57,7 +57,7 @@ export default function Photos() {
         <div 
           key={photo.id}
           className=" max-h-60 max-w-80 min-h-60 min-w-40 rounded-lg aspect-square">
-          <img src={photo.url} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" />
+          <img src={`/api/photos/${photo.id}`} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" />
         </div>
       );
     })

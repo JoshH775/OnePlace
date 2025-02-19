@@ -8,6 +8,28 @@ const Photos = new PhotosRepository();
 
 export default function registerPhotosRoutes(server: FastifyInstance) {
 
+    server.get("/api/photos/:id", async (req, res) => {
+        const { id: userId } = req.user as User;
+        const { id } = req.params as { id: string };
+        const photo = await Photos.findById(parseInt(id), userId);
+
+        if (!photo) {
+            res.status(404);
+            return { error: "Photo not found" };
+        }
+
+        const path = `users/${userId}/${photo.filename}`;
+
+        const file = storage.bucket().file(path);
+        const [url] = await file.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+            version: "v4"
+        })
+
+        res.redirect(url);
+    })
+
     server.post("/api/photos/generate-signed-url", async (req, res) => {
         const { id: userId } = req.user as User;
         const { files } = req.body as { files: { filename: string, type: string }[] };
@@ -18,7 +40,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
             const [url] = await bucket.file(filePath).getSignedUrl({
                 action: "write",
                 expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-                contentType: file.type
+                version: "v4"
             })
 
             return { path: filePath, url };
@@ -29,7 +51,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
     server.post("/api/photos/save", async (req, res) => {
         const { photos } = req.body as { photos: Photo[] };
-        
+        console.log(photos)
         await Photos.save(photos);
 
         return { success: true };
