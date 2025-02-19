@@ -17,7 +17,7 @@ const photosTable = mysqlTable('photos', {
   size: int().notNull(),
   location: text(),
   googleId: varchar({length: 255}).unique(),
-  date: timestamp({ mode: 'date'}),
+  date: timestamp(),
   createdAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
   compressed: int().notNull().default(0),
@@ -48,6 +48,7 @@ export interface Photo {
   compressed: number;
 }
 
+export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>
 
 
 export {

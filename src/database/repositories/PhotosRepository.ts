@@ -1,5 +1,5 @@
 import { db } from "../initDB";
-import { Photo, photosTable } from "../schema";
+import { Photo, photosTable, ProtoPhoto } from "../schema";
 
 export default class PhotosRepository {
 
@@ -11,14 +11,14 @@ export default class PhotosRepository {
     return photo ?? null;
   }
 
-  async save(photos: Photo[]): Promise<boolean> {
+  async save(photos: ProtoPhoto[], userId: number): Promise<boolean> {
     try {
       const photosWithDates = photos.map(photo => ({
         ...photo,
         date: photo.date ? new Date(photo.date) : null,
-        createdAt: new Date(photo.createdAt),
-        lastAccessed: new Date(photo.lastAccessed),
+        userId
       }))
+
       await db.insert(photosTable).values(photosWithDates)
     } catch (error) {
       console.error("Error saving photos:", error)

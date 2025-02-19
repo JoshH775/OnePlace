@@ -51,10 +51,9 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
     server.post("/api/photos/save", async (req, res) => {
         const { photos } = req.body as { photos: Photo[] };
-        console.log(photos)
-        await Photos.save(photos);
+        const success = await Photos.save(photos, (req.user as User).id);
 
-        return { success: true };
+        return { success };
     })
 
     server.post("/api/photos", async (req, res) => {

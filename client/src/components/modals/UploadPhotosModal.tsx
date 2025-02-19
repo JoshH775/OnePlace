@@ -18,8 +18,10 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
 
   const { mutate, isPending } = useMutation({
     mutationFn: (acceptedFiles: { file: File, metadata: ProtoPhoto }[]) => {
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
       return api.uploadPhotos(acceptedFiles);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
     },
   });
 
