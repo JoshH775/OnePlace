@@ -17,7 +17,7 @@ export type GoogleIntegration = {
     updatedAt: Date;
 }
 
-export interface Photo {
+export type Photo = {
     id: number;
     userId: number;
     url: string;
@@ -25,8 +25,6 @@ export interface Photo {
     size: number;
     alias: string | null;
     type: string;
-    width: number;
-    height: number;
     location: string | null;
     date: Date | null;
     googleId: string | null;
@@ -34,3 +32,5 @@ export interface Photo {
     lastAccessed: Date;
     compressed: number;
   }
+
+  export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'url'>
