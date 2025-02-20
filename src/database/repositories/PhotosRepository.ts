@@ -34,5 +34,8 @@ export default class PhotosRepository {
       where: (photos, { eq }) => eq(photos.userId, userId),
   })}
 
+  async deleteAllPhotos() {
+    await db.delete(photosTable)
+  }
 }
 

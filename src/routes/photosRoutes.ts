@@ -3,6 +3,7 @@ import PhotosRepository from "../database/repositories/PhotosRepository";
 import { User } from "../database/repositories/UserRepository";
 import { storage } from "../firebase";
 import { Photo } from "../database/schema";
+import sharp from "sharp";
 
 const Photos = new PhotosRepository();
 
@@ -21,13 +22,26 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         const path = `users/${userId}/${photo.filename}`;
 
         const file = storage.bucket().file(path);
-        const [url] = await file.getSignedUrl({
-            action: "read",
-            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-            version: "v4"
-        })
+        // const [url] = await file.getSignedUrl({
+        //     action: "read",
+        //     expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        //     version: "v4"
+        // })
 
-        res.redirect(url);
+        // return res.redirect(url);
+        const [buffer] = await file.download();
+        const lightweightFormats = ['jpeg', 'png', 'webp', 'jpg'];
+        const fileType = photo.filename.split('.').pop()?.toLowerCase();
+
+        // if (!fileType || !lightweightFormats.includes(fileType)) {
+        //     const webpBuffer = await sharp(buffer).jpeg({ quality: 80}).toBuffer();
+        //     res.header('Content-Type', 'image/jpeg');
+        //     return res.send(webpBuffer);
+        // }
+
+        res.header('Content-Type', `image/${fileType}`);
+
+        return buffer;
     })
 
     server.post("/api/photos/generate-signed-url", async (req, res) => {
@@ -62,5 +76,11 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         const photos = await Photos.findAllForUser(userId);
         return photos;
 
+    });
+
+    //temp
+    server.get("/api/photos/delete-all", async (req, res) => {
+        await Photos.deleteAllPhotos();
+        return { success: true };
     });
 }

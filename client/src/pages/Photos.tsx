@@ -2,12 +2,13 @@ import { Input } from "@headlessui/react";
 import { useState } from "react";
 import IconButton from "../components/ui/IconButton";
 import { ArrowsUpDownIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
 import NoPhotos from "../components/NoPhotos";
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
+  const queryClient = useQueryClient();
 
   const filters = {};
   const { data, isLoading } = useQuery({
@@ -45,9 +46,13 @@ export default function Photos() {
           icon={<FunnelIcon className="h-10 p-1" />}
           onClick={() => console.log("filter")}
         />
+        <button onClick={()=>{
+          api.req("/photos/delete-all");
+          queryClient.invalidateQueries({queryKey: ["photos", filters]});
+          }}>Delete All</button>
       </div>
 
-      <div id="photos" className="grid grid-cols-4 gap-2 w-full">
+      <div id="photos" className="flex flex-wrap gap-2 w-full">
   {isLoading ? (
     <div>Loading...</div>
   ) : (
@@ -57,7 +62,7 @@ export default function Photos() {
         <div 
           key={photo.id}
           className=" max-h-60 max-w-80 min-h-60 min-w-40 rounded-lg aspect-square">
-          <img src={`/api/photos/${photo.id}`} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" />
+          <img src={`/api/photos/${photo.id}`} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" loading="lazy" />
         </div>
       );
     })
