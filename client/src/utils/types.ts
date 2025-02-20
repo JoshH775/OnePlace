@@ -17,10 +17,9 @@ export type GoogleIntegration = {
     updatedAt: Date;
 }
 
-export type Photo = {
+export interface Photo {
     id: number;
     userId: number;
-    url: string;
     filename: string;
     size: number;
     alias: string | null;
