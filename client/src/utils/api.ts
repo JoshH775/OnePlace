@@ -1,4 +1,5 @@
 import { Photo, ProtoPhoto, User } from "./types";
+import imageCompression, { Options } from 'browser-image-compression';
 
 
 type APIOptions = {
@@ -81,9 +82,15 @@ async function uploadPhotos(fileData: { file: File, metadata: ProtoPhoto }[]) {
     // Firebase upload
     const uploadPromises = fileData.map(async (data, index) => {
       const { url } = signedUrls[index];
+
+      const compressedFile = await compressPhoto(data.file)
+
+      console.log('Pre-compression size:', data.file.size, 'Post-compression size:', compressedFile.size)
+
       const response = await fetch(url, {
         method: "PUT",
-        body: data.file,
+        body: compressedFile,
+
       });
 
       if (!response.ok) {
@@ -136,27 +143,29 @@ const api = {
   getPhotos,
   login,
   uploadPhotos,
-  getDimensionsFromFile,
 };
 
 export default api;
 
+//local functions
 
-function getDimensionsFromFile(file: File) {
-  console.log('here');
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  return new Promise<{ width: number; height: number }>((resolve, reject) => {
-    img.onload = () => {
-      resolve({ width: img.width, height: img.height });
-      URL.revokeObjectURL(url); // Revoke the object URL after use
-    };
-    img.onerror = (error) => {
-      console.log('error');
-      console.log(error);
-      reject(error);
-      URL.revokeObjectURL(url); // Revoke the object URL in case of error
-    };
-    img.src = url;
-  });
+export async function compressPhoto(file: File): Promise<File> {
+  const options: Options = {
+    useWebWorker: true,
+    maxSizeMB: 1,
+    alwaysKeepResolution: true,
+    preserveExif: true,
+
+  }
+
+  const supportedFileTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
+
+  if (!supportedFileTypes.includes(file.type)) {
+    return file
+  }
+
+  
+  return imageCompression(file, options);
+
+
 }
