@@ -3,58 +3,135 @@ import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import api from "../../utils/api";
-import ExifReader from 'exifreader';
+import ExifReader from "exifreader";
+import { ProtoPhoto } from "../../utils/types";
+import moment from "moment";
+import toast from "react-hot-toast";
+
 
 type Props = {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function UploadPhotosModal({ isOpen, onClose }: Props) {
+  const queryClient = useQueryClient();
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: (acceptedFiles: { file: File, metadata: ProtoPhoto }[]) => {
+      return api.uploadPhotos(acceptedFiles);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
+      onClose();
+    },
+  });
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const failedFiles = [];
+
+      const filesWithMetadata: { file: File, metadata: ProtoPhoto }[] = []
+
+      for (const file of acceptedFiles) {
+        const { valid, type, tags } = await validateFileForUpload(file);
+
+        if (!valid) {
+          console.log(`File ${file.name} is not a valid image type`);
+          toast.error(`File ${file.name} is not a valid image type`);
+          failedFiles.push(file);
+          continue;
+        }
+
+        const latitude = tags["GPSLatitude"]?.description as number | undefined;
+        const longitude = tags["GPSLongitude"]?.description as
+          | number
+          | undefined;
+
+        let location = null;
+
+        if (latitude && longitude) {
+          location = `${latitude}/${longitude}`;
+          if (tags["GPSAltitude"]?.description) {
+            location += `/${tags["GPSAltitude"].description.split(" ")[0]}`;
+          }
+        }
+
+        let date: string | Date | undefined = tags["DateTime"]?.description;
+        if (!date) {
+          date = moment(file.lastModified).toDate();
+        } else {
+          date = moment(date, "YYYY:MM:DD HH:mm:ss").toDate();
+        }
+
+        const protoFile: ProtoPhoto = {
+          filename: file.name,
+          location: location,
+          alias: null,
+          compressed: 0,
+          size: file.size,
+          date: date,
+          type: `image/${type}`,
+        };
+
+        console.log("ProtoFile:", protoFile);
+        filesWithMetadata.push({ file, metadata: protoFile });
+      }
+
+      if (failedFiles.length > 0) {
+        console.log("Failed files:", failedFiles);
+        return;
+      }
+
+      if (filesWithMetadata.length === 0) {
+        return;
+      }
+      
+      const upload = mutateAsync(filesWithMetadata);
+      toast.promise(upload, {
+        loading: "Uploading photos...",
+        success: "Photos uploaded successfully!",
+        error: "Failed to upload photos",
+      });
+
+    },
+    [mutateAsync]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Upload Photos">
+      <div className="flex flex-col gap-3">
+        <div {...getRootProps()} className="border border-dashed border-gray-300 dark:border-gray-700 rounded-md p-6">
+        {isPending && <p>Uploading...</p>}
+          {!isPending && (
+            <>
+              <input {...getInputProps()}  />
+              <div>
+                {isDragActive ? (
+                  <p>Drop the files here ...</p>
+                ) : (
+                  <p>Drag 'n' drop some files here, or click to select files</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
 }
 
-export default function UploadPhotosModal({isOpen, onClose}: Props) {
+async function validateFileForUpload(
+  file: File
+): Promise<{ valid: boolean; type: string; tags: ExifReader.Tags }> {
+  const validTypes = ["jpeg", "jpg", "png", "webp"];
+  const tags = await ExifReader.load(file);
 
-    const queryClient = useQueryClient();
+  if (!validTypes.includes(tags['FileType'].value)) {
+    return { valid: false, type: tags['FileType'].value, tags };
+  }
 
-
-    const { mutate, isPending } = useMutation({
-        mutationFn: (acceptedFiles: File[]) => {
-            queryClient.invalidateQueries({queryKey: ["photos"]})
-            return api.uploadPhotos(acceptedFiles)
-        },
-    })
-
-    const onDrop = useCallback(async (acceptedFiles: File[]) => {
-        
-        for (const file of acceptedFiles) {
-            if (!file.type.startsWith("image/")) {
-                alert("Only images are allowed")
-            }
-            const tags = await ExifReader.load(file);
-            console.log(tags);
-
-
-
-        }
-        
-
-        mutate(acceptedFiles)
-    }, [mutate])
-
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Upload Photos">
-            <div className="flex flex-col gap-3">
-                <div {...getRootProps()}>
-                    <input {...getInputProps()} accept=".jpg, .jpeg, .png, .raw" />
-                    <div className="border border-dashed border-gray-300 dark:border-onyx-light rounded-md p-6">
-                        {isDragActive ? (
-                            <p>Drop the files here ...</p>
-                        ) : (
-                            <p>Drag 'n' drop some files here, or click to select files</p>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </Modal>
-    )
+  return { valid: true, type: tags['FileType'].value, tags };
 }

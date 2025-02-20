@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm"
 import { int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core"
 
 const usersTable = mysqlTable('users', {
@@ -8,18 +7,17 @@ const usersTable = mysqlTable('users', {
   createdAt: timestamp().defaultNow().notNull(),
 })
 
-// const usersRelations = relations(usersTable, ({ many }) => ({
-//     photos: many(photosTable)
-// }))
 
 const photosTable = mysqlTable('photos', {
   id: int().autoincrement().primaryKey(),
   userId: int().references(() => usersTable.id).notNull(),
-  url: text().notNull(),
   filename: text().notNull(),
-  size: int().notNull(),
   alias: varchar({length: 255}),
+  type: varchar({length: 255}).notNull(),
+  size: int().notNull(),
+  location: text(),
   googleId: varchar({length: 255}).unique(),
+  date: timestamp(),
   createdAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
   compressed: int().notNull().default(0),
@@ -35,21 +33,26 @@ const googleIntegrationsTable = mysqlTable('google_integrations', {
   updatedAt: timestamp().defaultNow().notNull(),
 })
 
-// const photosRelations = relations(photosTable, ({ one }) => ({
-//     owner: one(usersTable, {
-//         fields: [photosTable.userId],
-//         references: [usersTable.id]
-//     })
-// }))
+export interface Photo {
+  id: number;
+  userId: number;
+  filename: string;
+  size: number;
+  alias: string | null;
+  type: string;
+  location: string | null;
+  date: Date | null;
+  googleId: string | null;
+  createdAt: Date;
+  lastAccessed: Date;
+  compressed: number;
+}
 
-// Define relationships
+export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>
 
 
 export {
   usersTable,
   photosTable,
-  // photosTable,
   googleIntegrationsTable,
-//   usersRelations,
-//   photosRelations,
 }
