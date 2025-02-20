@@ -6,6 +6,7 @@ import api from "../../utils/api";
 import ExifReader from "exifreader";
 import { ProtoPhoto } from "../../utils/types";
 import moment from "moment";
+import toast from "react-hot-toast";
 
 
 type Props = {
@@ -16,12 +17,13 @@ type Props = {
 export default function UploadPhotosModal({ isOpen, onClose }: Props) {
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (acceptedFiles: { file: File, metadata: ProtoPhoto }[]) => {
       return api.uploadPhotos(acceptedFiles);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["photos"] });
+      onClose();
     },
   });
 
@@ -36,6 +38,7 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
 
         if (!valid) {
           console.log(`File ${file.name} is not a valid image type`);
+          toast.error(`File ${file.name} is not a valid image type`);
           failedFiles.push(file);
           continue;
         }
@@ -67,7 +70,6 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
           alias: null,
           compressed: 0,
           size: file.size,
-          googleId: null,
           date: date,
           type: `image/${type}`,
         };
@@ -76,9 +78,24 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
         filesWithMetadata.push({ file, metadata: protoFile });
       }
 
-      mutate(filesWithMetadata);
+      if (failedFiles.length > 0) {
+        console.log("Failed files:", failedFiles);
+        return;
+      }
+
+      if (filesWithMetadata.length === 0) {
+        return;
+      }
+      
+      const upload = mutateAsync(filesWithMetadata);
+      toast.promise(upload, {
+        loading: "Uploading photos...",
+        success: "Photos uploaded successfully!",
+        error: "Failed to upload photos",
+      });
+
     },
-    [mutate]
+    [mutateAsync]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -90,7 +107,7 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
         {isPending && <p>Uploading...</p>}
           {!isPending && (
             <>
-              <input {...getInputProps()} accept=".jpg, .jpeg, .png, .raw, .tiff, .nef, .webp" />
+              <input {...getInputProps()}  />
               <div>
                 {isDragActive ? (
                   <p>Drop the files here ...</p>
@@ -109,7 +126,7 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
 async function validateFileForUpload(
   file: File
 ): Promise<{ valid: boolean; type: string; tags: ExifReader.Tags }> {
-  const validTypes = ["jpeg", "jpg", "png", "raw", "tiff", "nef", "webp"];
+  const validTypes = ["jpeg", "jpg", "png", "webp"];
   const tags = await ExifReader.load(file);
 
   if (!validTypes.includes(tags['FileType'].value)) {
