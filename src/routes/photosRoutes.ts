@@ -2,85 +2,102 @@ import { FastifyInstance } from "fastify";
 import PhotosRepository from "../database/repositories/PhotosRepository";
 import { User } from "../database/repositories/UserRepository";
 import { storage } from "../firebase";
-import { Photo } from "../database/schema";
-import sharp from "sharp";
+import { ProtoPhoto } from "../database/schema";
+import { MultipartValue } from "@fastify/multipart";
 
 const Photos = new PhotosRepository();
 
 export default function registerPhotosRoutes(server: FastifyInstance) {
+  server.get("/api/photos/:id", async (req, res) => {
+    const { id: userId } = req.user as User;
+    const { id } = req.params as { id: string };
+    const photo = await Photos.findById(parseInt(id), userId);
 
-    server.get("/api/photos/:id", async (req, res) => {
-        const { id: userId } = req.user as User;
-        const { id } = req.params as { id: string };
-        const photo = await Photos.findById(parseInt(id), userId);
+    if (!photo) {
+      res.status(404);
+      return { error: "Photo not found" };
+    }
 
-        if (!photo) {
-            res.status(404);
-            return { error: "Photo not found" };
+    const path = `users/${userId}/${photo.filename}`;
+
+    const file = storage.bucket().file(path);
+    const [buffer] = await file.download();
+    const fileType = photo.filename.split(".").pop()?.toLowerCase();
+
+    res.header("Content-Type", `image/${fileType}`);
+
+    return buffer;
+  });
+
+  server.post("/api/photos/upload", async (req, res) => {
+    const parts = req.parts();
+    const { id: userId } = req.user as User;
+
+    const files = [];
+
+    for await (const part of parts) {
+      if (part.type === "file") {
+        const fileBuffer = await part.toBuffer();
+
+        const metadataFieldName = `metadata_${part.fieldname.split("_")[1]}`;
+        const metadata = part.fields[metadataFieldName];
+
+        if (!metadata) {
+          res.status(400);
+          return res.send({
+            error: `Metadata field ${metadataFieldName} not found`,
+          });
         }
 
-        const path = `users/${userId}/${photo.filename}`;
+        //Lots of casting, but necessary as fields retrieved from part.fields are typed as an unkown MultipartValue
+        const metadataObject: ProtoPhoto = JSON.parse(
+          (metadata as MultipartValue).value as string
+        );
 
+        files.push({
+          file: fileBuffer,
+          metadata: metadataObject,
+        });
+      }
+    }
+
+    console.log("Received files:", files);
+
+    if (files.length === 0) {
+      res.status(400);
+      return res.send({ error: "No files uploaded" });
+    }
+
+    await Photos.create(
+      files.map((file) => file.metadata),
+      userId
+    );
+
+    for (const { file: buffer, metadata } of files) {
+      try {
+        const path = `users/${userId}/${metadata.filename}`;
         const file = storage.bucket().file(path);
-        // const [url] = await file.getSignedUrl({
-        //     action: "read",
-        //     expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-        //     version: "v4"
-        // })
+        await file.save(buffer);
+      } catch (error) {
+        console.error(`Error saving file: ${metadata.filename}: `, error);
+        res.status(500);
+        return res.send({ error: "Failed to save file" });
+      }
+    }
 
-        // return res.redirect(url);
-        const [buffer] = await file.download();
-        const lightweightFormats = ['jpeg', 'png', 'webp', 'jpg'];
-        const fileType = photo.filename.split('.').pop()?.toLowerCase();
+    return res.send({ success: true });
+  });
 
-        // if (!fileType || !lightweightFormats.includes(fileType)) {
-        //     const webpBuffer = await sharp(buffer).jpeg({ quality: 80}).toBuffer();
-        //     res.header('Content-Type', 'image/jpeg');
-        //     return res.send(webpBuffer);
-        // }
+  server.post("/api/photos", async (req, res) => {
+    //this is where filtering is supposed ot happen
+    const { id: userId } = req.user as User;
+    const photos = await Photos.findAllForUser(userId);
+    return photos;
+  });
 
-        res.header('Content-Type', `image/${fileType}`);
-
-        return buffer;
-    })
-
-    server.post("/api/photos/generate-signed-url", async (req, res) => {
-        const { id: userId } = req.user as User;
-        const { files } = req.body as { files: { filename: string, type: string }[] };
-        const bucket = storage.bucket();
-
-        const signedUrls = await Promise.all(files.map(async (file) => {
-            const filePath = `users/${userId}/${file.filename}`;
-            const [url] = await bucket.file(filePath).getSignedUrl({
-                action: "write",
-                expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-                version: "v4"
-            })
-
-            return { path: filePath, url };
-        }));
-
-        return signedUrls;
-    })
-
-    server.post("/api/photos/save", async (req, res) => {
-        const { photos } = req.body as { photos: Photo[] };
-        const success = await Photos.save(photos, (req.user as User).id);
-
-        return { success };
-    })
-
-    server.post("/api/photos", async (req, res) => {
-        //this is where filtering is supposed ot happen
-        const { id: userId } = req.user as User;
-        const photos = await Photos.findAllForUser(userId);
-        return photos;
-
-    });
-
-    //temp
-    server.get("/api/photos/delete-all", async (req, res) => {
-        await Photos.deleteAllPhotos();
-        return { success: true };
-    });
+  //temp
+  server.get("/api/photos/delete-all", async (req, res) => {
+    await Photos.deleteAllPhotos();
+    return { success: true };
+  });
 }

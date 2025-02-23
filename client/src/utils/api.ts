@@ -68,64 +68,36 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
 }
 
 
-async function uploadPhotos(fileData: { file: File, metadata: ProtoPhoto }[]) {
+async function uploadPhotos(fileDataArray: { file: File, metadata: ProtoPhoto }[]) {
   try {
-    const files = fileData.map((data) => {
-      return { filename: data.metadata.filename, type: data.metadata.type };
-    });
+    const formData = new FormData();
 
-    const { data: signedUrls } = await req("/photos/generate-signed-url", {
-      method: "POST",
-      body: { files },
-    });
-
-    // Firebase upload
-    const uploadPromises = fileData.map(async (data, index) => {
-      const { url } = signedUrls[index];
-
-      const compressedFile = await compressPhoto(data.file)
-
-      console.log('Pre-compression size:', data.file.size, 'Post-compression size:', compressedFile.size)
-
-      const response = await fetch(url, {
-        method: "PUT",
-        body: compressedFile,
-
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to upload ${data.metadata.filename}`);
-      }
-    });
-
-    await Promise.all(uploadPromises);
-
-    // Collect photo metadata
-    const photos = await Promise.all(
-      fileData.map(async (data, index) => {
-
-        return {
-          ...data.metadata,
-          url: '',
-        };
-      })
-    );
-
-    // Save to db
-    const saveResponse = await req("/photos/save", {
-      method: "POST",
-      body: { photos },
-    });
-
-    if (saveResponse.status !== 200) {
-      throw new Error(`Failed to save photos to the database: ${saveResponse.data}`);
+    for (let i = 0; i < fileDataArray.length; i++) {
+      const { file, metadata } = fileDataArray[i];
+      const compressedFile = await compressPhoto(file);
+      formData.append(`file_${i}`, compressedFile);
+      formData.append(`metadata_${i}`, JSON.stringify(metadata));
     }
 
-    console.log("Upload complete");
+    console.log("Uploading photos:", formData);
+
+    const response = await fetch('/api/photos/upload', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload photos. Check response.' +  response);
+    }
+    return true;
+
   } catch (error) {
     console.error("Error during photo upload:", error);
+    throw error
   }
 }
+
 
 async function getPhotos(filters = {}): Promise<Photo[]> {
   const { data } = await req("/photos", {
