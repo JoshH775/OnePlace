@@ -11,7 +11,7 @@ export default class PhotosRepository {
     return photo ?? null;
   }
 
-  async create(photos: ProtoPhoto[], userId: number): Promise<number[] | null> {
+  async create(photos: ProtoPhoto[], userId: number): Promise<Photo[] | null> {
     try {
       const photosWithDates = photos.map(photo => ({
         ...photo,
@@ -21,8 +21,13 @@ export default class PhotosRepository {
 
       const results = await db.insert(photosTable).values(photosWithDates).$returningId()
       const photoIds = results.map(result => result.id)
-      return photoIds
       
+      const returnedPhotos: Photo[] = await db.query.photosTable.findMany({
+        where: (photos, { or, eq }) => or(...photoIds.map(id => eq(photos.id, id))),
+      })
+
+      return returnedPhotos
+
     } catch (error) {
       console.error("Error saving photos:", error)
       return null

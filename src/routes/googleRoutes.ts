@@ -4,47 +4,54 @@ import {
   GoogleIntegration,
   GoogleIntegrationRepository,
 } from "../database/repositories/GoogleIntegrationRepository";
+import { Photo, ProtoPhoto } from "../database/schema";
 
 const GoogleIntegrations = new GoogleIntegrationRepository();
 
-async function fetchGooglePickerAPI(
-  endpoint: string,
-  method: string,
-  token: string,
-  body?: object,
-  queryParams?: Record<string, string>
-) {
+interface fetchOptions {
+  endpoint: string;
+  method: string;
+  token: string;
+  headers?: Record<string, string>;
+  body?: object;
+  queryParams?: Record<string, string>;
+}
 
-  const url = new URL(`https://photospicker.googleapis.com/v1/${endpoint}`);
+async function fetchGoogleLibraryApi(options: fetchOptions) {
+  const { method, token, body, queryParams, headers: customHeaders, endpoint } = options
+
+  const url = new URL(`https://photoslibrary.googleapis.com/v1/${endpoint}`)
   if (queryParams) {
-    Object.keys(queryParams).forEach(key => url.searchParams.append(key, queryParams[key]));
+    Object.keys(queryParams).forEach(key => url.searchParams.append(key, queryParams[key]))
   }
 
-  console.log(url.toString());
+  let headers = new Headers(customHeaders || {})
+  headers.append('Authorization', `Bearer ${token}`)
 
-  const response = await fetch(
-    url.toString(),
-    {
-      method,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    }
-  );
+  const isRawBuffer = Buffer.isBuffer(body)
 
-  const responseData = await response.json();
+  const response = await fetch(url.toString(), {
+    method,
+    headers,
+    body: isRawBuffer ? body : body ? JSON.stringify(body) : undefined, // Handle buffers
+  })
+
+  const contentType = response.headers.get('Content-Type')
+  const responseData = contentType?.includes('application/json')
+    ? await response.json()
+    : await response.text() 
+
   if (!response.ok) {
     throw {
       status: response.status,
       message: responseData.message || "Google API error",
       data: responseData,
-    };
+    }
   }
 
-  return responseData;
+  return responseData
 }
+
 
 async function getValidAccessToken(userId: number) {
   let integration = await GoogleIntegrations.findByUserId(userId);
@@ -80,80 +87,54 @@ export function registerGoogleRoutes(server: FastifyInstance) {
     const { status, message } =
       await GoogleIntegrations.deleteIntegrationForUser(user.id);
     return reply.code(status).send({ message });
-  });
+  })
+  }
 
-  server.get("/api/google/picker", async (request, reply) => {
+
+  export async function uploadPhotoToGoogle(userId: number, fileDataArray: { file: Buffer, metadata: Photo | ProtoPhoto }[]): Promise<boolean> {
     try {
-      const user = request.user as User;
-      const accessToken = await getValidAccessToken(user.id);
-      const sessionData = await fetchGooglePickerAPI(
-        "sessions",
-        "POST",
-        accessToken
-      );
-
-      return sessionData;
-    } catch (error: any) {
-      console.error(error);
-      return reply.code(error.status || 500).send({ message: error.message });
+      const token = await getValidAccessToken(userId);
+  
+      // First have to upload bytes to Google Photos
+      const uploadResponses = await Promise.all(fileDataArray.map(async ({ file, metadata }) => {
+        return await fetchGoogleLibraryApi({
+          endpoint: 'uploads',
+          method: 'POST',
+          token,
+          headers: {
+            'Content-type': 'application/octet-stream',
+            'X-Goog-Upload-Protocol': 'raw',
+            'X-Goog-Upload-Content-Type': metadata.type,
+          },
+          body: file
+        });
+      }));
+  
+      // Draft new media items with upload tokens and metadata
+      const newMediaItems = uploadResponses.map((uploadResponse, index) => {
+        const metadata = fileDataArray[index].metadata;
+        return {
+          description: metadata.filename,
+          simpleMediaItem: {
+            fileName: metadata.filename,
+            uploadToken: uploadResponse
+          }
+        };
+      });
+  
+      // Create media items in Google Photos
+      await fetchGoogleLibraryApi({
+        endpoint: 'mediaItems:batchCreate',
+        method: 'POST',
+        token,
+        body: {
+          newMediaItems
+        }
+      });
+  
+      return true;
+    } catch (error) {
+      console.error("Error uploading photo to Google Photos:", error);
+      return false;
     }
-  });
-
-  server.post("/api/google/picker/poll", async (request, reply) => {
-    const user = request.user as User;
-    const { sessionId } = request.body as { sessionId: string };
-
-    try {
-      const accessToken = await getValidAccessToken(user.id);
-      const sessionData = await fetchGooglePickerAPI(
-        `sessions/${sessionId}`,
-        "GET",
-        accessToken
-      );
-
-      return sessionData;
-    } catch (error: any) {
-      console.error(error);
-      return reply.code(error.status || 500).send({ message: error.message });
-    }
-  });
-
-  server.delete("/api/google/picker/delete", async (request, reply) => {
-    const user = request.user as User;
-    const { sessionId } = request.body as { sessionId: string };
-
-    try {
-      const accessToken = await getValidAccessToken(user.id);
-      await fetchGooglePickerAPI(
-        `sessions/${sessionId}`,
-        "DELETE",
-        accessToken
-      );
-
-      return { message: "Session deleted" };
-    } catch (error: any) {
-      console.error(error);
-      return reply.code(error.status || 500).send({ message: error.message });
-    }
-  });
-
-  server.post("/api/google/picker/media", async (request, reply) => {
-    const user = request.user as User;
-    const { sessionId } = request.body as { sessionId: string };
-
-    try {
-      const accessToken = await getValidAccessToken(user.id);
-      const mediaItems = await fetchGooglePickerAPI(
-        'mediaItems',
-        'GET',
-        accessToken,
-        undefined,
-        { session_id: sessionId}
-      );
-
-      return mediaItems;
-    } catch (error: any) {
-      console.error('Error getting media items', error.data.error.details[1].fieldViolations);
-      return reply.code(error.status || 500).send({ message: error.message });
-  }})
-}
+  }

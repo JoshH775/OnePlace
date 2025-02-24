@@ -4,6 +4,7 @@ import { User } from "../database/repositories/UserRepository";
 import { storage } from "../firebase";
 import { ProtoPhoto } from "../database/schema";
 import { MultipartValue } from "@fastify/multipart";
+import { uploadPhotoToGoogle } from "./googleRoutes";
 
 const Photos = new PhotosRepository();
 
@@ -84,6 +85,9 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         return res.send({ error: "Failed to save file" });
       }
     }
+
+    //Upload to Google Photos
+    await uploadPhotoToGoogle(userId, files);
 
     return res.send({ success: true });
   });
