@@ -45,7 +45,7 @@ export function registerAuthRoutes(server: FastifyInstance, fastifyPassport: Aut
           scope: [
             "profile",
             "email",
-            "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
+            "https://www.googleapis.com/auth/photoslibrary.appendonly"
           ],
           accessType: "offline",
         })(request, reply);

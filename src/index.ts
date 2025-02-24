@@ -6,7 +6,7 @@ import { googleStrategy, localStrategy } from "./authStrategies";
 import { Authenticator } from "@fastify/passport";
 import { User, UsersRepository } from "./database/repositories/UserRepository";
 import { registerRoutes } from "./routes/routes";
-
+import { fastifyMultipart } from '@fastify/multipart';
 const Users = new UsersRepository();
 
 export const server = Fastify();
@@ -14,6 +14,12 @@ server.register(cors, {
   origin: true,
   credentials: true,
 });
+
+server.register(fastifyMultipart, {
+  limits: {
+    fileSize: 45 * 1024 * 1024, // 45MB
+  }
+})
 
 export const fastifyPassport = new Authenticator();
 
