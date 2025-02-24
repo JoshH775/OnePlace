@@ -29,7 +29,7 @@ export interface Photo {
     googleId: string | null;
     createdAt: Date;
     lastAccessed: Date;
-    compressed: number;
+    compressed: boolean;
   }
 
   export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>

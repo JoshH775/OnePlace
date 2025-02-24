@@ -64,6 +64,13 @@
       "when": 1739894993684,
       "tag": "0008_lame_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1740396211285,
+      "tag": "0009_hot_supernaut",
+      "breakpoints": true
     }
   ]
 }

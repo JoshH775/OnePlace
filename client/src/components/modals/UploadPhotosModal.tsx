@@ -68,7 +68,7 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
           filename: file.name,
           location: location,
           alias: null,
-          compressed: 0,
+          compressed: false,
           size: file.size,
           date: date,
           type: `image/${type}`,

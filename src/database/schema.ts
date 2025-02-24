@@ -1,4 +1,4 @@
-import { int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core"
+import { boolean, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core"
 
 const usersTable = mysqlTable('users', {
   id: int().autoincrement().primaryKey(),
@@ -20,7 +20,7 @@ const photosTable = mysqlTable('photos', {
   date: timestamp(),
   createdAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
-  compressed: int().notNull().default(0),
+  compressed: boolean().default(false).notNull(),
 })
 
 const googleIntegrationsTable = mysqlTable('google_integrations', {
@@ -31,6 +31,21 @@ const googleIntegrationsTable = mysqlTable('google_integrations', {
   refreshToken: text(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
+})
+
+const userSettingsTable = mysqlTable('user_settings', {
+  id: int().autoincrement().primaryKey(),
+  userId: int().references(() => usersTable.id).notNull(),
+  key: varchar({length: 255}).notNull(),
+  value: text().notNull(),
+  type: varchar({length: 255}).notNull(), // string, number, boolean, object
+})
+
+const globalSettingsTable = mysqlTable('global_settings', {
+  id: int().autoincrement().primaryKey(),
+  key: varchar({length: 255}).notNull(),
+  value: text().notNull(),
+  type: varchar({length: 255}).notNull(), // string, number, boolean, object
 })
 
 export interface Photo {
@@ -45,7 +60,7 @@ export interface Photo {
   googleId: string | null;
   createdAt: Date;
   lastAccessed: Date;
-  compressed: number;
+  compressed: boolean;
 }
 
 export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>
@@ -55,4 +70,6 @@ export {
   usersTable,
   photosTable,
   googleIntegrationsTable,
+  userSettingsTable,
+  globalSettingsTable
 }
