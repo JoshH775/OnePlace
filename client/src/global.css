@@ -31,6 +31,7 @@ hr {
     border-bottom: 2px solid var(--color-indigo);
     padding-bottom: 0.4rem;
     display: inline-block;
+    width: fit-content;
 }
 
 html {
