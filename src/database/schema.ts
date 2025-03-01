@@ -1,69 +1,67 @@
-import { boolean, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core"
+import {
+  boolean,
+  int,
+  mysqlTable,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
-const usersTable = mysqlTable('users', {
+const usersTable = mysqlTable("users", {
   id: int().autoincrement().primaryKey(),
-  email: varchar({length: 255}).notNull().unique(),
+  email: varchar({ length: 255 }).notNull().unique(),
   password: text().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
-})
+});
 
-
-const photosTable = mysqlTable('photos', {
+const photosTable = mysqlTable("photos", {
   id: int().autoincrement().primaryKey(),
-  userId: int().references(() => usersTable.id).notNull(),
+  userId: int()
+    .references(() => usersTable.id)
+    .notNull(),
   filename: text().notNull(),
-  alias: varchar({length: 255}),
-  type: varchar({length: 255}).notNull(),
+  alias: varchar({ length: 255 }),
+  type: varchar({ length: 255 }).notNull(),
   size: int().notNull(),
   location: text(),
-  googleId: varchar({length: 255}).unique(),
+  googleId: varchar({ length: 255 }).unique(),
   date: timestamp(),
   createdAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
   compressed: boolean().default(false).notNull(),
-})
+});
 
-const googleIntegrationsTable = mysqlTable('google_integrations', {
+const googleIntegrationsTable = mysqlTable("google_integrations", {
   id: int().autoincrement().primaryKey(),
-  userId: int().references(() => usersTable.id).notNull(),
-  googleId: varchar({length: 255}).notNull().unique(),
+  userId: int()
+    .references(() => usersTable.id)
+    .notNull(),
+  googleId: varchar({ length: 255 }).notNull().unique(),
   accessToken: text().notNull(),
   refreshToken: text(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
-})
+});
 
-const userSettingsTable = mysqlTable('user_settings', {
+const userSettingsTable = mysqlTable(
+  "user_settings",
+  {
+    userId: int()
+      .references(() => usersTable.id)
+      .notNull(),
+    key: varchar({ length: 255 }).notNull(),
+    value: text().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.key] })]
+);
+
+
+const globalSettingsTable = mysqlTable("global_settings", {
   id: int().autoincrement().primaryKey(),
-  userId: int().references(() => usersTable.id).notNull(),
-  key: varchar({length: 255}).notNull(),
+  key: varchar({ length: 255 }).notNull(),
   value: text().notNull(),
-  type: varchar({length: 255}).notNull(), // string, number, boolean, object
-})
-
-const globalSettingsTable = mysqlTable('global_settings', {
-  id: int().autoincrement().primaryKey(),
-  key: varchar({length: 255}).notNull(),
-  value: text().notNull(),
-  type: varchar({length: 255}).notNull(), // string, number, boolean, object
-})
-
-export interface Photo {
-  id: number;
-  userId: number;
-  filename: string;
-  size: number;
-  alias: string | null;
-  type: string;
-  location: string | null;
-  date: Date | null;
-  googleId: string | null;
-  createdAt: Date;
-  lastAccessed: Date;
-  compressed: boolean;
-}
-
-export type ProtoPhoto = Omit<Photo, 'userId' | 'id' | 'googleId' | 'createdAt' | 'lastAccessed'>
+});
 
 
 export {
@@ -71,5 +69,5 @@ export {
   photosTable,
   googleIntegrationsTable,
   userSettingsTable,
-  globalSettingsTable
-}
+  globalSettingsTable,
+};
