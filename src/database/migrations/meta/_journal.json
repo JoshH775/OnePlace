@@ -71,6 +71,27 @@
       "when": 1740396211285,
       "tag": "0009_hot_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1740506849904,
+      "tag": "0010_dazzling_molten_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1740506882062,
+      "tag": "0011_smart_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1740512605730,
+      "tag": "0012_shocking_cobalt_man",
+      "breakpoints": true
     }
   ]
 }
