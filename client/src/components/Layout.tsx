@@ -15,7 +15,6 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "./AuthProvider";
-import Spinner from "./ui/Spinner";
 import Button from "./ui/Button";
 import IconButton from "./ui/IconButton";
 
@@ -47,9 +46,6 @@ const Link = ({ text, to, icon }: LinkProps) => {
 export default function Layout() {
   const { user, logout, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   if (!user && !isLoading) {
     return <Navigate to="/login" />;
