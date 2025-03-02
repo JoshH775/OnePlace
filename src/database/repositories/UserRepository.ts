@@ -1,3 +1,4 @@
+import { ProtoUser, User } from "../../../shared/types"
 import { db } from "../initDB"
 import { usersTable } from "../schema"
 
@@ -16,30 +17,17 @@ export class UsersRepository {
         }) ?? null
     }
 
-    async create(user: ProtoUser): Promise<User> {
-        const result = await db.insert(usersTable).values({
-            email: user.email!,
-            password: user.password ?? '',
-        })
+    // async create(user: ProtoUser): Promise<User> {
+    //     const result = await db.insert(usersTable).values({
+    //         email: user.email!,
+    //         password: user.password ?? '',
+    //     })
 
-        return {
-            id: result[0].insertId,
-            email: user.email,
-            password: user.password,
-            createdAt: new Date()
-        }
-    }
-}
-
-
-export type User = {
-    id: number
-    email: string
-    password: string | null
-    createdAt: Date
-}
-
-type ProtoUser = {
-    email: string
-    password: string | null
+    //     return {
+    //         id: result[0].insertId,
+    //         email: user.email,
+    //         password: user.password,
+    //         createdAt: new Date()
+    //     }
+    // }
 }
