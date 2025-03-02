@@ -4,9 +4,11 @@ import fastifySession from "@fastify/session";
 import fastifyCookie from "@fastify/cookie";
 import { googleStrategy, localStrategy } from "./authStrategies";
 import { Authenticator } from "@fastify/passport";
-import { User, UsersRepository } from "./database/repositories/UserRepository";
+import { UsersRepository } from "./database/repositories/UserRepository";
 import { registerRoutes } from "./routes/routes";
 import { fastifyMultipart } from '@fastify/multipart';
+import { User } from "@shared/types";
+
 const Users = new UsersRepository();
 
 export const server = Fastify();

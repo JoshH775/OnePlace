@@ -1,4 +1,4 @@
-import { Photo, ProtoPhoto, User } from "./types";
+import { Photo, ProtoPhoto, UserData } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
 
 
@@ -33,18 +33,19 @@ async function req(path: string, options: APIOptions = defaultOptions) {
   return { status: response.status, data: await response.json() };
 }
 
-async function getUser(): Promise<User | null> {
+async function getUser(): Promise<UserData | null> {
   const { data, status } = await req("/user");
 
   if (status !== 200) {
     return null;
   }
 
-  const user = {
+  const user: UserData = {
     id: data.user.id,
     email: data.user.email,
     integrations: data.integrations,
     createdAt: new Date(data.user.createdAt),
+    settings: data.settings,
   };
 
   return user;
@@ -108,6 +109,15 @@ async function getPhotos(filters = {}): Promise<Photo[]> {
   return data;
 }
 
+async function updateSetting(setting: { key: string, value: string }): Promise<boolean> {
+  const { status } = await req("/user/settings", {
+    method: "POST",
+    body: setting,
+  });
+
+  return status === 200;
+}
+
 const api = {
   req,
   getUser,
@@ -115,6 +125,7 @@ const api = {
   getPhotos,
   login,
   uploadPhotos,
+  updateSetting,
 };
 
 export default api;
