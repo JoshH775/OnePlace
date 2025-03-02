@@ -1,10 +1,10 @@
 import React, { createContext, useContext } from "react";
-import { User } from "../utils/types";
+import { UserData } from "@shared/types";
 import api from "../utils/api";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 type AuthContextType = {
-  user: User | null;
+  user: UserData | null;
   isLoading: boolean;
   logout: () => void;
   login: (email: string, password: string) => Promise<boolean>;
@@ -22,13 +22,11 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
-  const { data: userData, isLoading } = useQuery({
+  const { data: user, isLoading } = useSuspenseQuery({
     queryKey: ["user"],
     queryFn: api.getUser,
     refetchOnWindowFocus: false,
   });
-
-  const user = userData ?? null;
 
   const logout = async () => {
     await api.req("/auth/logout");
