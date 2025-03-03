@@ -1,10 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { User } from "../database/repositories/UserRepository";
 import {
-  GoogleIntegration,
   GoogleIntegrationRepository,
 } from "../database/repositories/GoogleIntegrationRepository";
-import { Photo, ProtoPhoto } from "../database/schema";
+import { GoogleIntegration, User } from "@shared/types";
 
 const GoogleIntegrations = new GoogleIntegrationRepository();
 
