@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../initDB";
 import { userSettingsTable } from "../schema";
-import { UserSettingsKeysType } from "@shared/types";
+import { SettingsObject, UserSettingsKeysType } from "@shared/types";
 import { DefaultUserSettings } from "@shared/constants";
 
 export default class SettingsRepository {
@@ -40,17 +40,15 @@ export default class SettingsRepository {
 
   async getAllForUser(
     userId: number
-  ): Promise<Record<UserSettingsKeysType, { value: string }>> {
+  ): Promise<SettingsObject> {
     const result = await db.query.userSettingsTable.findMany({
       where: eq(userSettingsTable.userId, userId),
     });
 
-    const userSettings = {} as Record<UserSettingsKeysType, { value: string }>;
+    const userSettings = {} as SettingsObject;
 
     for (const setting of result) {
-      userSettings[setting.key as UserSettingsKeysType] = {
-        value: setting.value,
-      };
+      userSettings[setting.key as UserSettingsKeysType] = setting.value;
     }
 
     const settings = {

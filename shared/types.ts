@@ -67,4 +67,4 @@ export type Setting = {
   value: string;
 };
 
-export type SettingsObject = Record<SettingKeyType, { value: string }>;
+export type SettingsObject = Record<SettingKeyType, string>;
