@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { Authenticator } from "@fastify/passport";
-import { User } from "../database/repositories/UserRepository";
 import { GoogleIntegrationRepository } from "../database/repositories/GoogleIntegrationRepository";
+import { User } from "@shared/types";
 
 const GoogleIntegrations = new GoogleIntegrationRepository();
 

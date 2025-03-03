@@ -36,8 +36,15 @@ export const googleStrategy = new GoogleStrategy.Strategy(
     const existingIntegration = await GoogleIntegrations.findByGoogleId(profile.id);
 
     if (!existingIntegration) {
-      await GoogleIntegrations.createIntegrationForUser(user.id, profile.id, accessToken, refreshToken);
-      console.log('Exit 2')
+      //this will always be defined, they have to accept email scope
+      const email = profile.emails?.[0].value as string
+
+      if (!refreshToken) {
+        await GoogleIntegrations.revokeToken(accessToken);
+        return done(null, false, { message: "Google account connection failed. Please try again" });
+      }
+      await GoogleIntegrations.createIntegrationForUser(user.id, profile.id, email, accessToken, refreshToken);
+      console.log('Google account successfully created')
       return done(null, user);
     }
 
