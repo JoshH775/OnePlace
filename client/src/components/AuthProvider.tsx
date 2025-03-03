@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { UserData } from "@shared/types";
+import { SettingsObject, UserData } from "@shared/types";
 import api from "../utils/api";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
@@ -8,6 +8,7 @@ type AuthContextType = {
   isLoading: boolean;
   logout: () => void;
   login: (email: string, password: string) => Promise<boolean>;
+  setSettingsContext: (settings: SettingsObject) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   logout: () => false,
   login: async () => false,
+  setSettingsContext: () => false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -42,8 +44,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return success
   }
 
+  const setSettingsContext = async (settings: SettingsObject) => {
+    if (user) {
+      const updatedUser = { ...user, settings };
+      queryClient.setQueryData(["user"], updatedUser);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, logout, login }}>
+    <AuthContext.Provider value={{ user, isLoading, logout, login, setSettingsContext }}>
       {children}
     </AuthContext.Provider>
   );
