@@ -109,12 +109,6 @@ async function getPhotos(filters = {}): Promise<Photo[]> {
   return data;
 }
 
-async function fetchUserSettings(): Promise<Record<UserSettingsKeysType, { value: string}>> {
-  const { data } = await req("/user/settings");
-
-  return data as Record<UserSettingsKeysType, { value: string}>;
-}
-
 async function updateSetting(setting: { key: SettingKeyType, value: string }): Promise<{ key: SettingKeyType, value: string, success: boolean }> {
   const { status } = await req("/user/settings", {
     method: "POST",
@@ -132,7 +126,6 @@ const api = {
   login,
   uploadPhotos,
   updateSetting,
-  fetchUserSettings,
 };
 
 export default api;
