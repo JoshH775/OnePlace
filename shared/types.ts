@@ -9,7 +9,7 @@ createdAt: Date;
 
 export type UserData = Omit<User, 'password'> & {
   integrations: Record<string, GoogleIntegration | DropboxIntegration>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
-  settings: Record<SettingKeyType, string>;
+  settings: SettingsObject;
 };
 
 
@@ -58,9 +58,13 @@ export type ProtoUser = {
   password: string | null;
 };
 
-export type UserSettingsKeysType = keyof typeof UserSettingsKeys;
-
-
-export type GlobalSettingsKeysType = keyof typeof GlobalSettingsKeys;
-
+export type UserSettingsKeysType = typeof UserSettingsKeys[keyof typeof UserSettingsKeys];
+export type GlobalSettingsKeysType = typeof GlobalSettingsKeys[keyof typeof GlobalSettingsKeys];
 export type SettingKeyType = UserSettingsKeysType | GlobalSettingsKeysType;
+
+export type Setting = {
+  key: SettingKeyType;
+  value: string;
+};
+
+export type SettingsObject = Record<SettingKeyType, { value: string }>;
