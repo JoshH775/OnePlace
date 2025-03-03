@@ -1,4 +1,4 @@
-import { Photo, ProtoPhoto, UserData } from "@shared/types";
+import { Photo, ProtoPhoto, SettingKeyType, UserData, UserSettingsKeysType } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
 
 
@@ -109,13 +109,19 @@ async function getPhotos(filters = {}): Promise<Photo[]> {
   return data;
 }
 
-async function updateSetting(setting: { key: string, value: string }): Promise<boolean> {
+async function fetchUserSettings(): Promise<Record<UserSettingsKeysType, { value: string}>> {
+  const { data } = await req("/user/settings");
+
+  return data as Record<UserSettingsKeysType, { value: string}>;
+}
+
+async function updateSetting(setting: { key: SettingKeyType, value: string }): Promise<{ key: SettingKeyType, value: string, success: boolean }> {
   const { status } = await req("/user/settings", {
     method: "POST",
     body: setting,
   });
 
-  return status === 200;
+  return { key: setting.key, value: setting.value, success: status === 200 };
 }
 
 const api = {
@@ -126,6 +132,7 @@ const api = {
   login,
   uploadPhotos,
   updateSetting,
+  fetchUserSettings,
 };
 
 export default api;

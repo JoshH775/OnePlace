@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import api from "../../utils/api";
 import ExifReader from "exifreader";
-import { ProtoPhoto } from "../../utils/types";
 import moment from "moment";
 import toast from "react-hot-toast";
+import { ProtoPhoto } from "@shared/types";
 
 
 type Props = {

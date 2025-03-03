@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { getAllIntegrationsForUser } from "../database/repositories/IntegrationUtils";
-import SettingsRepository, { UserSettingsKeysType } from "../database/repositories/SettingsRepository";
-import { User } from "../../shared/types";
+import SettingsRepository from "../database/repositories/SettingsRepository";
+import { User, UserSettingsKeysType } from "../../shared/types";
 
 const Settings = new SettingsRepository()
 
