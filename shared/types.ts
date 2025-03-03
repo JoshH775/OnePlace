@@ -8,7 +8,7 @@ createdAt: Date;
 };
 
 export type UserData = Omit<User, 'password'> & {
-  integrations: Record<string, GoogleIntegration | DropboxIntegration>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
+  integrations: Record<string, GoogleIntegrationClient>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
   settings: SettingsObject;
 };
 
@@ -16,6 +16,7 @@ export type UserData = Omit<User, 'password'> & {
 export type GoogleIntegration = {
   id: number;
   userId: number;
+  email: string;
   googleId: string;
   accessToken: string;
   refreshToken: string;
@@ -23,15 +24,8 @@ export type GoogleIntegration = {
   updatedAt: Date;
 };
 
-export type DropboxIntegration = {
-  id: number;
-  userId: number;
-  dropboxId: string;
-  accessToken: string;
-  refreshToken: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type GoogleIntegrationClient = Omit<GoogleIntegration, 'accessToken' | 'refreshToken' | 'userId'>;
+
 
 export interface Photo {
   id: number;
