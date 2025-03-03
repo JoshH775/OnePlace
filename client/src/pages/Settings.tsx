@@ -1,63 +1,52 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
 import api from "../utils/api";
-import Button from "../components/ui/Button";
-import Panel from "../components/ui/Panel";
-import { Switch } from "@headlessui/react";
-
+import Panel from "../components/ui/Panel"
+import { SettingKeyType } from "@shared/types";
+import { useState } from "react";
+import Switch from "@frontend/components/ui/Switch";
 import { UserSettingsKeys } from "@shared/constants";
-
-console.log(UserSettingsKeys)
 
 
 export default function Settings(){
 
+
     const user = useAuth().user!;
+    const setSettingsContext = useAuth().setSettingsContext;
     const settings = user.settings;
     const integrations = user.integrations;
 
-    console.log(UserSettingsKeys)
+    console.log(settings)
 
 
-    const queryClient = useQueryClient();
 
-    const { mutate: disconnectIntegration, isPending } = useMutation({
-        mutationFn: (integration: string) => api.disconnectIntegration(integration),
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ['user']})
-        }
-    })
+
+
+    // const { mutate: disconnectIntegration, isPending } = useMutation({
+    //     mutationFn: (integration: string) => api.disconnectIntegration(integration),
+    //     onSuccess: () => {
+    //         queryClient.invalidateQueries({queryKey: ['user']})
+    //     }
+    // })
 
     const { mutate: updateSetting, isPending: isPendingSetting } = useMutation({
-        mutationFn: (setting: { key: SettingKeyType, value: string}) => api.updateSetting(setting),
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ['user']})
+        mutationFn: (setting: { key: SettingKeyType, value: string}) => {
+            return api.updateSetting(setting)
+        },
+        onSuccess: (data) => {
+            setSettingsContext({...settings, [data.key]: {value: data.value}})
         }
     })
 
-    function SwitchField({label, value, onChange}: {label: string, value: boolean, onChange: (value: boolean) => void}){
-        return (
-            <Switch
-            checked={value}
-            onChange={onChange}
-            >   
-            {label}
-            </Switch>
-        )
 
+    return (<div className="flex-grow flex flex-col justify-start w-full p-5">
+        <p className="text-4xl font-semibold pb-4">Settings</p>
 
-    }
-
-    return (<div className="flex-grow flex justify-center items-center w-full px-[5%]">
         <Panel className="w-full">
-            <h1 className="indigo-underline text-2xl font-bold">Closadasdas</h1>
+            <p className="indigo-underline text-3xl font-bold">Cloud Services</p>
             <p>Manage your connected Cloud Storage vendors and control auto-upload behaviour</p>
             <div className="switches w-[90%]">
-                <SwitchField
-                    label="Google Auto Upload"
-                    value={settings.GOOGLE_AUTO_UPLOAD === 'true'}
-                    onChange={(value) => updateSetting({key: 'google_auto_upload', value: value.toString()})}
-                />
+                <Switch checked={settings[UserSettingsKeys.GOOGLE_AUTO_UPLOAD] === 'true'} onChange={(checked) => updateSetting({key: UserSettingsKeys.GOOGLE_AUTO_UPLOAD, value: checked.toString()})}>Google Photos Auto Upload</Switch>
             </div>
         </Panel>
 
