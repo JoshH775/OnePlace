@@ -19,7 +19,9 @@ export default function Switch({checked, onChange, disabled}: Props){
             onChange={handleChange}
             className={`${
                 checked ? 'bg-indigo-600' : 'bg-gray-200'
-            } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none cursor-pointer`}
+            } ${
+                disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none`}
         >
             <span
                 className={`${
