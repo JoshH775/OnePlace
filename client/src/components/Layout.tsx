@@ -51,20 +51,6 @@ export default function Layout() {
     return <Navigate to="/login" />;
   }
 
-  function toggleDarkMode() {
-    const html = document.querySelector("html");
-    if (!html) return;
-
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-    } else {
-      html.classList.add("dark");
-    }
-    window.localStorage.theme = html.classList.contains("dark")
-      ? "dark"
-      : "light";
-  }
-
   return (
       <div className="flex flex-grow w-full">
         <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 relative">
@@ -124,12 +110,6 @@ export default function Layout() {
           </div>
         </section>
         <Outlet />
-
-        <IconButton
-          icon={<MoonIcon className="w-14 p-2" />}
-          onClick={toggleDarkMode}
-          className="absolute bottom-3 right-3"
-        />
       </div>
   );
 }
