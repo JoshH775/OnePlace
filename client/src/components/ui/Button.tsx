@@ -12,12 +12,12 @@ type Props = {
 const variantClasses = {
     'filled': "bg-indigo text-white data-[hover]:bg-indigo-700",
     'outlined': "border border-gray-300 dark:border-onyx-light  dark:text-white data-[hover]:bg-gray-200 dark:data-[hover]:bg-onyx-light",
-    'danger': "bg-red-500 text-white data-[hover]:bg-red-700"
+    'danger': "bg-red-500 text-white data-[hover]:bg-red-600"
 
 }
 
 export default function Button({ onClick = ()=>{}, children, className, variant = 'filled', disabled }: Props) {
-    const baseClasses = "flex items-center gap-2 p-2 text-center rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+    const baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
 
     const fullClassname = baseClasses + " " + variantClasses[variant]  + " " +(className ?? '');
 
