@@ -8,7 +8,7 @@ createdAt: Date;
 };
 
 export type UserData = Omit<User, 'password'> & {
-  integrations: Record<string, GoogleIntegrationClient>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
+  integrations: Record<string, GoogleClientIntegration>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
   settings: SettingsObject;
 };
 
@@ -24,7 +24,7 @@ export type GoogleIntegration = {
   updatedAt: Date;
 };
 
-export type GoogleIntegrationClient = Omit<GoogleIntegration, 'accessToken' | 'refreshToken' | 'userId'>;
+export type GoogleClientIntegration = Omit<GoogleIntegration, 'accessToken' | 'refreshToken' | 'userId'>;
 
 
 export interface Photo {
