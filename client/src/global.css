@@ -30,10 +30,14 @@ hr {
 .indigo-underline {
     border-bottom: 2px solid var(--color-indigo);
     padding-bottom: 0.4rem;
-    display: inline-block;
     width: fit-content;
 }
 
 html {
     color-scheme: light dark;
+}
+
+span {
+    display: flex;
+    align-items: center;
 }
