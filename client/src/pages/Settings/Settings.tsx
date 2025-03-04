@@ -59,7 +59,7 @@ export default function Settings() {
               subtitle={getIntegrationActionValues(integrations["google"]).status}
               buttonText={getIntegrationActionValues(integrations["google"]).action}
               buttonVariant={getIntegrationActionValues(integrations["google"]).buttonVariant}
-              onClick={() => disconnectIntegration("google")}
+              onClick={getIntegrationActionValues(integrations["google"]).action === "Disconnect" ? () => disconnectIntegration("google") : () => {window.location.href = "/api/auth/google"}}
               loading={isPending} />
           </div>
           <ToggleSetting
@@ -71,7 +71,7 @@ export default function Settings() {
                 value: checked.toString(),
               })
             }
-            disabled={isPendingSetting}
+            disabled={isPendingSetting || getIntegrationActionValues(integrations["google"]).action !== "Disconnect"}
           />
         </div>
       </Panel>
@@ -131,7 +131,7 @@ function getIntegrationActionValues(integration: GoogleClientIntegration | undef
   }
 
   return {
-    status: "Connected",
+    status: `Connected as ${integration.email}`,
     action: "Disconnect",
     buttonVariant: "danger",
   };
