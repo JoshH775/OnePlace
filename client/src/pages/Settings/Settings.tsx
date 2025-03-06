@@ -10,6 +10,7 @@ import SettingAction from "./SettingAction";
 import IconButton from "@frontend/components/ui/IconButton";
 import { useReducer } from "react";
 import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function Settings() {
   const user = useAuth().user!;
@@ -63,8 +64,14 @@ export default function Settings() {
   });
 
   const deletePhotos = () => {
-    console.log("delete photos");
-  };
+    toast.promise(
+      api.req("/photos/delete-all", { method: "DELETE", throwError: true }),
+      {
+        loading: "Deleting photos...",
+        success: "Photos deleted successfully",
+        error: "Failed to delete photos",
+      }
+    )  };
 
   const deleteAccount = () => {
     console.log("delete account");
