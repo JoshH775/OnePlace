@@ -1,4 +1,4 @@
-import { Photo, ProtoPhoto, SettingKeyType, UserData, UserSettingsKeysType } from "@shared/types";
+import { Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
 
 
