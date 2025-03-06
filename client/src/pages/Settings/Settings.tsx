@@ -75,6 +75,7 @@ export default function Settings() {
 
   const deleteAccount = () => {
     console.log("delete account");
+    alert("Not implemented yet");
   };
 
   return (
