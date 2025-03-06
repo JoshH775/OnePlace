@@ -2,9 +2,11 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import IconButton from "./IconButton";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "motion/react";
+import { ReactNode } from "react";
 
 export type ModalProps = {
   isOpen: boolean;
+  icon?: ReactNode;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
@@ -22,6 +24,7 @@ export default function Modal({
   onClose,
   children,
   title,
+  icon,
 }: ModalProps) {
   return (
     <AnimatePresence>
@@ -42,9 +45,12 @@ export default function Modal({
           >
             <DialogPanel className="bg-white dark:bg-onyx rounded-lg p-6 w-1/3  max-w-[600px]">
               <div className="flex justify-between items-center mb-3">
-                <DialogTitle className="text-2xl font-bold indigo-underline">
-                  {title}
-                </DialogTitle>
+              <div className="flex items-center gap-2 indigo-underline">
+                  {icon}
+                  <DialogTitle className="text-2xl font-bold ">
+                    {title}
+                  </DialogTitle>
+                </div>
                 <IconButton
                   icon={<XMarkIcon className="h-6" />}
                   onClick={onClose}
