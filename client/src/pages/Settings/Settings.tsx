@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../../components/AuthProvider";
 import api from "../../utils/api";
 import Panel from "../../components/ui/Panel";
@@ -13,16 +13,16 @@ import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
 
 export default function Settings() {
   const user = useAuth().user!;
-  const { setSettingsContext, logout } = useAuth();
+  const { updateUser, logout } = useAuth();
   const settings = user.settings;
   const integrations = user.integrations;
-
-  const queryClient = useQueryClient();
 
   const { mutate: disconnectIntegration, isPending } = useMutation({
     mutationFn: (integration: string) => api.disconnectIntegration(integration),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      const updatedUser = user
+      delete updatedUser.integrations['google']
+      updateUser(updatedUser)
     },
   });
 
@@ -31,7 +31,9 @@ export default function Settings() {
       return api.updateSetting(setting);
     },
     onSuccess: (data) => {
-      setSettingsContext({ ...settings, [data.key]: data.value });
+      const updatedUser = user
+      updatedUser.settings[data.key] = data.value
+      updateUser(updatedUser)
     },
   });
 
