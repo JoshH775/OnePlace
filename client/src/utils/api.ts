@@ -5,6 +5,7 @@ import imageCompression, { Options } from 'browser-image-compression';
 type APIOptions = {
   method: string;
   body?: object;
+  throwError?: boolean;
 };
 
 const defaultOptions: APIOptions = {
@@ -26,9 +27,19 @@ async function req(path: string, options: APIOptions = defaultOptions) {
 
   const response = await fetch(`/api${path}`, fetchOptions);
 
-  if (response.status === 401) {
-    return { status: 401, data: "Unauthorized" };
+  if (!response.ok) {
+    if (response.status === 401) {
+      if (options.throwError) {
+        throw new Error("Unauthorized");
+      }
+      return { status: 401, data: "Unauthorized" };
+    }
+
+    if (options.throwError) {
+      throw new Error("Failed to fetch data");
   }
+}
+
 
   return { status: response.status, data: await response.json() };
 }
