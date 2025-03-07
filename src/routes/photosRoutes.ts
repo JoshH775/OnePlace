@@ -85,7 +85,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         //Upload thumbnail
         const thumbnailPath = `users/${userId}/thumbnails/${metadata.filename}`;
         const thumbnailFile = storage.bucket().file(thumbnailPath);
-        await thumbnailFile.save(await sharp(buffer).resize(200, 200).toBuffer());
+        await thumbnailFile.save(await sharp(buffer).resize(250, 250).toBuffer());
 
       } catch (error) {
         console.error(`Error saving file: ${metadata.filename}: `, error);
