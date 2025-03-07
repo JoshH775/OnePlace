@@ -4,6 +4,7 @@ import { storage } from "../firebase";
 import { MultipartValue } from "@fastify/multipart";
 import { uploadPhotoToGoogle } from "./googleRoutes";
 import { ProtoPhoto, User } from "@shared/types";
+import sharp from "sharp";
 
 const Photos = new PhotosRepository();
 
@@ -11,6 +12,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   server.get("/api/photos/:id", async (req, res) => {
     const { id: userId } = req.user as User;
     const { id } = req.params as { id: string };
+    const { thumbnail } = req.query as { thumbnail: string };
     const photo = await Photos.findById(parseInt(id), userId);
 
     if (!photo) {
@@ -18,15 +20,16 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       return { error: "Photo not found" };
     }
 
-    const path = `users/${userId}/${photo.filename}`;
-
+    const path = thumbnail === "true" ? `users/${userId}/thumbnails/${photo.filename}` : `users/${userId}/${photo.filename}`;
     const file = storage.bucket().file(path);
-    const [buffer] = await file.download();
-    const fileType = photo.filename.split(".").pop()?.toLowerCase();
 
-    res.header("Content-Type", `image/${fileType}`);
+    const [url] = await file.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+    })
 
-    return buffer;
+    return res.redirect(url);
+    
   });
 
   server.post("/api/photos/upload", async (req, res) => {
@@ -61,8 +64,6 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       }
     }
 
-    console.log("Received files:", files);
-
     if (files.length === 0) {
       res.status(400);
       return res.send({ error: "No files uploaded" });
@@ -73,11 +74,19 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       userId
     );
 
+    //Upload to Firebase Storage
     for (const { file: buffer, metadata } of files) {
       try {
+        //Upload full size image
         const path = `users/${userId}/${metadata.filename}`;
         const file = storage.bucket().file(path);
         await file.save(buffer);
+
+        //Upload thumbnail
+        const thumbnailPath = `users/${userId}/thumbnails/${metadata.filename}`;
+        const thumbnailFile = storage.bucket().file(thumbnailPath);
+        await thumbnailFile.save(await sharp(buffer).resize(200, 200).toBuffer());
+
       } catch (error) {
         console.error(`Error saving file: ${metadata.filename}: `, error);
         res.status(500);
