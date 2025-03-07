@@ -16,3 +16,5 @@ export const DefaultUserSettings = {
     [UserSettingsKeys.UPLOAD_MAX_QUALITY]: "true",
     [UserSettingsKeys.COMPRESS_BEFORE_UPLOAD]: "true",
 } as const;
+
+export const CHUNK_SIZE = 45 * 1024 * 1024 // 45MB

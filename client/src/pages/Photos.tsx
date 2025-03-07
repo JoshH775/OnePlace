@@ -62,7 +62,7 @@ export default function Photos() {
         <div 
           key={photo.id}
           className=" max-h-60 max-w-80 min-h-60 min-w-40 rounded-lg aspect-square">
-          <img src={`/api/photos/${photo.id}`} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" loading="lazy" />
+          <img src={`/api/photos/${photo.id}?thumbnail=true`} alt={photo.alias ?? ''} className="w-full h-full object-cover rounded-lg" loading="lazy" />
         </div>
       );
     })

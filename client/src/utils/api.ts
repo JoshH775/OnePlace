@@ -80,14 +80,14 @@ async function disconnectIntegration(provider: string): Promise<boolean> {
 }
 
 
-async function uploadPhotos(fileDataArray: { file: File, metadata: ProtoPhoto }[]) {
+async function uploadPhotos(fileDataArray: { file: File, metadata: ProtoPhoto }[], compress: boolean = true) {
   try {
     const formData = new FormData();
 
     for (let i = 0; i < fileDataArray.length; i++) {
       const { file, metadata } = fileDataArray[i];
-      const compressedFile = await compressPhoto(file);
-      formData.append(`file_${i}`, compressedFile);
+      const fileToUpload = compress ? await compressPhoto(file) : file;
+      formData.append(`file_${i}`, fileToUpload);
       formData.append(`metadata_${i}`, JSON.stringify(metadata));
     }
 
