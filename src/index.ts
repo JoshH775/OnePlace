@@ -8,6 +8,7 @@ import { UsersRepository } from "./database/repositories/UserRepository";
 import { registerRoutes } from "./routes/routes";
 import { fastifyMultipart } from '@fastify/multipart';
 import { User } from "@shared/types";
+import { CHUNK_SIZE } from "@shared/constants";
 
 const Users = new UsersRepository();
 
@@ -19,7 +20,7 @@ server.register(cors, {
 
 server.register(fastifyMultipart, {
   limits: {
-    fileSize: 45 * 1024 * 1024, // 45MB
+    fileSize: CHUNK_SIZE
   }
 })
 
