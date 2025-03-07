@@ -201,6 +201,13 @@ export default function Settings() {
           className="mt-2"
         />
       </Panel>
+
+      <Panel className="w-full flex flex-col mt-4 p-8">
+        <p className="text-2xl indigo-underline font-bold">Photo Management</p>
+        <ToggleSetting label="Enable photo compression" checked={settings[UserSettingsKeys.COMPRESS_BEFORE_UPLOAD] === 'true'} onChange={(checked) => {
+          updateSetting({ key: UserSettingsKeys.COMPRESS_BEFORE_UPLOAD, value: checked.toString() })
+        }} />
+      </Panel>
     </div>
   );
 }
