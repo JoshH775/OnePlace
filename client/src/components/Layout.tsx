@@ -7,16 +7,16 @@ import {
 import {
   FolderIcon,
   Cog6ToothIcon,
-  ArrowRightStartOnRectangleIcon,
   PhotoIcon,
   HomeIcon,
   ShieldCheckIcon,
-  MoonIcon,
   ClockIcon,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "./AuthProvider";
 import Button from "./ui/Button";
-import IconButton from "./ui/IconButton";
+import UploadPhotosModal from "./modals/UploadPhotosModal";
+import { useState } from "react";
 
 interface LinkProps {
   text: string;
@@ -44,8 +44,9 @@ const Link = ({ text, to, icon }: LinkProps) => {
 };
 
 export default function Layout() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
+  const [uploadModal, setUploadModal] = useState(false);
 
   if (!user && !isLoading) {
     return <Navigate to="/login" />;
@@ -53,6 +54,7 @@ export default function Layout() {
 
   return (
       <div className="flex flex-grow w-full">
+        <UploadPhotosModal isOpen={uploadModal} onClose={() => {setUploadModal(false)}}/>
         <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 relative">
           <div className="gap-2 flex flex-col" id="nav-links">
             <RouterLink
@@ -100,11 +102,13 @@ export default function Layout() {
           >
             <div className="py-1 border-t border-gray-300 dark:border-onyx-light">
               <Button
-                className="mt-2 bg-red-600 rounded-lg p-2 text-white data-[hover]:bg-red-700"
-                onClick={logout}
+                className="mt-2 "
+                onClick={() => {
+                  setUploadModal(true);
+                }}
               >
-                <ArrowRightStartOnRectangleIcon className="h-5" />
-                <p>Logout</p>
+                <ArrowUpTrayIcon className="w-6" />
+                <p>Upload Photos</p>
               </Button>
             </div>
           </div>
