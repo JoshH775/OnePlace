@@ -2,18 +2,24 @@ import React from "react";
 import { Button as HeadlessButton } from "@headlessui/react";
 
 type Props = {
-    onClick: () => void;
+    onClick?: () => void;
     children: React.ReactNode;
     className?: string;
-    variant?: "filled" | "outlined";
+    variant?: "filled" | "outlined" | "danger";
     disabled?: boolean;
 }
 
-export default function Button({ onClick, children, className, variant = 'filled', disabled }: Props) {
-    const baseClasses = "flex items-center gap-2 p-2 text-center rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
-    const variantClasses = variant === "filled" ? "bg-indigo text-white data-[hover]:bg-indigo-700" : "border border-gray-300 dark:border-onyx-light  dark:text-white data-[hover]:bg-gray-200 dark:data-[hover]:bg-onyx-light";
+const variantClasses = {
+    'filled': "bg-indigo text-white data-[hover]:bg-indigo-700",
+    'outlined': "border border-gray-300 dark:border-onyx-light  dark:text-white data-[hover]:bg-gray-200 dark:data-[hover]:bg-onyx-light",
+    'danger': "bg-red-500 text-white data-[hover]:bg-red-600"
 
-    const fullClassname = baseClasses + " " + variantClasses  + " " +(className ?? '');
+}
+
+export default function Button({ onClick = ()=>{}, children, className, variant = 'filled', disabled }: Props) {
+    const baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+
+    const fullClassname = baseClasses + " " + variantClasses[variant]  + " " +(className ?? '');
 
     return (
         <HeadlessButton onClick={onClick} className={fullClassname} disabled={disabled}>

@@ -15,7 +15,6 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "./AuthProvider";
-import Spinner from "./ui/Spinner";
 import Button from "./ui/Button";
 import IconButton from "./ui/IconButton";
 
@@ -47,26 +46,9 @@ const Link = ({ text, to, icon }: LinkProps) => {
 export default function Layout() {
   const { user, logout, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   if (!user && !isLoading) {
     return <Navigate to="/login" />;
-  }
-
-  function toggleDarkMode() {
-    const html = document.querySelector("html");
-    if (!html) return;
-
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-    } else {
-      html.classList.add("dark");
-    }
-    window.localStorage.theme = html.classList.contains("dark")
-      ? "dark"
-      : "light";
   }
 
   return (
@@ -128,12 +110,6 @@ export default function Layout() {
           </div>
         </section>
         <Outlet />
-
-        <IconButton
-          icon={<MoonIcon className="w-14 p-2" />}
-          onClick={toggleDarkMode}
-          className="absolute bottom-3 right-3"
-        />
       </div>
   );
 }

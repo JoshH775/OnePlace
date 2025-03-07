@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { db } from "../initDB";
-import { Photo, photosTable, ProtoPhoto } from "../schema";
+import { photosTable } from "../schema";
+import { Photo, ProtoPhoto } from "@shared/types";
 
 export default class PhotosRepository {
 
@@ -34,6 +36,9 @@ export default class PhotosRepository {
     }
   }
   
+  async deleteAllForUser(userId: number) {
+    await db.delete(photosTable).where(eq(photosTable.userId, userId))
+  }
 
   async findAllForUser(userId: number): Promise<Photo[]> {
     return await db.query.photosTable.findMany({

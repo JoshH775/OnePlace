@@ -1,10 +1,9 @@
 import { FastifyInstance } from "fastify";
 import PhotosRepository from "../database/repositories/PhotosRepository";
-import { User } from "../database/repositories/UserRepository";
 import { storage } from "../firebase";
-import { ProtoPhoto } from "../database/schema";
 import { MultipartValue } from "@fastify/multipart";
 import { uploadPhotoToGoogle } from "./googleRoutes";
+import { ProtoPhoto, User } from "@shared/types";
 
 const Photos = new PhotosRepository();
 
@@ -100,8 +99,22 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   });
 
   //temp
-  server.get("/api/photos/delete-all", async (req, res) => {
-    await Photos.deleteAllPhotos();
-    return { success: true };
+  server.delete("/api/photos/delete-all", async (req, res) => {
+    const { id } = req.user as User;
+    await Photos.deleteAllPhotos(); //delete from my db
+    res.send({ success: true });
+    await hardDeleteFromFirebase(id);
   });
+}
+
+
+async function hardDeleteFromFirebase(userId: number) {
+  const path = `users/${userId}`;
+  const bucket = storage.bucket();
+  const [files] = await bucket.getFiles({ prefix: path, maxResults: 500, autoPaginate: true });
+
+  const deletePromises = files.map((file) => file.delete());
+  await Promise.all(deletePromises);
+
+  
 }

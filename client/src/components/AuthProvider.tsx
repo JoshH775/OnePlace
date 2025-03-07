@@ -1,20 +1,22 @@
 import React, { createContext, useContext } from "react";
-import { User } from "../utils/types";
+import { UserData } from "@shared/types";
 import api from "../utils/api";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 type AuthContextType = {
-  user: User | null;
+  user: UserData | null;
   isLoading: boolean;
   logout: () => void;
   login: (email: string, password: string) => Promise<boolean>;
+  updateUser: (user: UserData) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
-  logout: () => false,
+  logout: () => {},
   login: async () => false,
+  updateUser: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -22,13 +24,11 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
-  const { data: userData, isLoading } = useQuery({
+  const { data: user, isLoading } = useSuspenseQuery({
     queryKey: ["user"],
     queryFn: api.getUser,
     refetchOnWindowFocus: false,
   });
-
-  const user = userData ?? null;
 
   const logout = async () => {
     await api.req("/auth/logout");
@@ -44,8 +44,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return success
   }
 
+  const updateUser = (updatedUserData: UserData) => {
+    const updatedUser = { ...user, ...updatedUserData }
+    queryClient.setQueryData(["user"], updatedUser);
+  }
+
+
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, logout, login }}>
+    <AuthContext.Provider value={{ user, isLoading, logout, login, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

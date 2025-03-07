@@ -3,13 +3,14 @@ import { googleIntegrationsTable } from "../schema";
 import { db } from "../initDB";
 import { eq } from "drizzle-orm";
 import { IntegrationRepository } from "./IntegrationUtils";
+import { GoogleIntegration, GoogleIntegrationClient } from "@shared/types";
 
 export class GoogleIntegrationRepository implements IntegrationRepository {
 
     integrationName: string = 'google';
 
-    async findByUserId(userId: number, includeTokens = true): Promise<GoogleIntegration | GoogleIntegrationWithoutTokens | null> {
-        const integration = await db.query.googleIntegrationsTable.findFirst({
+    async findByUserId(userId: number, includeTokens = true): Promise<GoogleIntegration | GoogleIntegrationClient | null> {
+        const integration: GoogleIntegration | undefined = await db.query.googleIntegrationsTable.findFirst({
             where: (integrations, { eq }) => eq(integrations.userId, userId),
         });
         
@@ -19,9 +20,15 @@ export class GoogleIntegrationRepository implements IntegrationRepository {
             return integration;
         }
 
-        const { accessToken, refreshToken, ...integrationWithoutTokens } = integration;
-        return integrationWithoutTokens;
-     
+        const clientIntegration: GoogleIntegrationClient = {
+            id: integration.id,
+            email: integration.email,
+            googleId: integration.googleId,
+            createdAt: integration.createdAt,
+            updatedAt: integration.updatedAt,
+        }
+
+        return clientIntegration
 
     }
 
@@ -33,10 +40,11 @@ export class GoogleIntegrationRepository implements IntegrationRepository {
         return integration ?? null;
     }
 
-    async createIntegrationForUser(userId: number, googleId: string, accessToken: string, refreshToken: string): Promise<GoogleIntegration> {
+    async createIntegrationForUser(userId: number, googleId: string, email: string, accessToken: string, refreshToken: string): Promise<GoogleIntegration> {
         const result = await db.insert(googleIntegrationsTable).values({
             userId: userId,
             googleId: googleId,
+            email,
             accessToken: accessToken,
             refreshToken: refreshToken,
         });
@@ -44,6 +52,7 @@ export class GoogleIntegrationRepository implements IntegrationRepository {
         return {
             id: result[0].insertId,
             userId: userId,
+            email,
             googleId: googleId,
             accessToken: accessToken,
             refreshToken: refreshToken,
@@ -52,17 +61,12 @@ export class GoogleIntegrationRepository implements IntegrationRepository {
         };
     }
     async deleteIntegrationForUser(userId: number): Promise<{ status: number, message: string }> {
-        const integration = await this.findByUserId(userId);
+        const integration = await this.findByUserId(userId) as GoogleIntegration | null;
         if (!integration) {
             return { status: 404, message: `Integration not found for user id ${userId}` };
         }
 
-        const encodedToken = encodeURIComponent((integration as GoogleIntegration).accessToken);
-        const response = await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${encodedToken}`);
-
-        if (response.status !== 200 && response.status !== 400) {
-            return { status: response.status, message: 'Failed to revoke access token' };
-        }
+        await this.revokeToken(integration.accessToken);
 
         await db.delete(googleIntegrationsTable).where(eq(googleIntegrationsTable.userId, userId));
 
@@ -94,16 +98,13 @@ export class GoogleIntegrationRepository implements IntegrationRepository {
 
         return { status: 200, message: 'Successfully refreshed access token' };
     }
-}
 
-export type GoogleIntegration = {
-    id: number;
-    userId: number;
-    googleId: string;
-    accessToken: string;
-    refreshToken: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-}
+    async revokeToken(accessToken: string){
+        const encodedToken = encodeURIComponent(accessToken);
+        const response = await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${encodedToken}`);
 
-export type GoogleIntegrationWithoutTokens = Omit<GoogleIntegration, 'accessToken' | 'refreshToken'>;
+        if (response.status !== 200 && response.status !== 400) {
+            return { status: response.status, message: 'Failed to revoke access token' };
+        }
+    }
+}

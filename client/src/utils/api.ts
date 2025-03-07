@@ -1,10 +1,11 @@
-import { Photo, ProtoPhoto, User } from "./types";
+import { Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
 
 
 type APIOptions = {
   method: string;
   body?: object;
+  throwError?: boolean;
 };
 
 const defaultOptions: APIOptions = {
@@ -26,25 +27,36 @@ async function req(path: string, options: APIOptions = defaultOptions) {
 
   const response = await fetch(`/api${path}`, fetchOptions);
 
-  if (response.status === 401) {
-    return { status: 401, data: "Unauthorized" };
+  if (!response.ok) {
+    if (response.status === 401) {
+      if (options.throwError) {
+        throw new Error("Unauthorized");
+      }
+      return { status: 401, data: "Unauthorized" };
+    }
+
+    if (options.throwError) {
+      throw new Error("Failed to fetch data");
   }
+}
+
 
   return { status: response.status, data: await response.json() };
 }
 
-async function getUser(): Promise<User | null> {
+async function getUser(): Promise<UserData | null> {
   const { data, status } = await req("/user");
 
   if (status !== 200) {
     return null;
   }
 
-  const user = {
+  const user: UserData = {
     id: data.user.id,
     email: data.user.email,
     integrations: data.integrations,
     createdAt: new Date(data.user.createdAt),
+    settings: data.settings,
   };
 
   return user;
@@ -108,6 +120,15 @@ async function getPhotos(filters = {}): Promise<Photo[]> {
   return data;
 }
 
+async function updateSetting(setting: { key: SettingKeyType, value: string }): Promise<{ key: SettingKeyType, value: string, success: boolean }> {
+  const { status } = await req("/user/settings", {
+    method: "POST",
+    body: setting,
+  });
+
+  return { key: setting.key, value: setting.value, success: status === 200 };
+}
+
 const api = {
   req,
   getUser,
@@ -115,6 +136,7 @@ const api = {
   getPhotos,
   login,
   uploadPhotos,
+  updateSetting,
 };
 
 export default api;
