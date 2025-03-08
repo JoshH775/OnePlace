@@ -4,7 +4,7 @@ import "./global.css";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Layout from "./components/Layout";
-import Photos from "./pages/Photos";
+import Photos from "./pages/Photos/Photos";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {Toaster} from 'react-hot-toast'
 import { Suspense } from "react";
