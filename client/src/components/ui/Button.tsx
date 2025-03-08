@@ -17,7 +17,10 @@ const variantClasses = {
 }
 
 export default function Button({ onClick = ()=>{}, children, className, variant = 'filled', disabled }: Props) {
-    const baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+    let baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+    if (disabled) {
+        baseClasses += "cursor-not-allowed";
+    }
 
     const fullClassname = baseClasses + " " + variantClasses[variant]  + " " +(className ?? '');
 
