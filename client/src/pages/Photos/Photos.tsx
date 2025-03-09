@@ -12,10 +12,11 @@ import {
 import { CheckCircleIcon as CheckIconSolid } from "@heroicons/react/24/solid";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-import NoPhotos from "../../components/NoPhotos";
+import NoPhotos from "./NoPhotos";
 import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
 import JSZip from "jszip";
+import CreateCollectionModal from "@frontend/components/modals/CreateCollectionModal";
 
 
 export default function Photos() {
@@ -89,7 +90,7 @@ export default function Photos() {
   }
 
   return (
-    <div className="content flex-col !justify-start p-6 gap-3 relative">
+    <div className="w-full flex-col !justify-start p-6 gap-3 relative">
       <div id="tools" className="flex items-center w-full">
         <Input
           name="search"

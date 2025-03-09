@@ -1,4 +1,4 @@
-import NoPhotos from "../components/NoPhotos"
+import NoPhotos from "./Photos/NoPhotos"
 
 
 export default function Home() {
