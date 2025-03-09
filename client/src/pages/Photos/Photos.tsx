@@ -15,13 +15,14 @@ import api from "../../utils/api";
 import NoPhotos from "./NoPhotos";
 import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
-import JSZip from "jszip";
-import CreateCollectionModal from "@frontend/components/modals/CreateCollectionModal";
+// import JSZip from "jszip";
+import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
 
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
 
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,9 +35,7 @@ export default function Photos() {
 
   if (!data || (data.length === 0 && !isLoading)) {
     return (
-      <div className="content">
         <NoPhotos />
-      </div>
     );
   }
 
@@ -90,7 +89,8 @@ export default function Photos() {
   }
 
   return (
-    <div className="w-full flex-col !justify-start p-6 gap-3 relative">
+    <div className="w-full flex flex-col !justify-start p-6 gap-3 relative">
+      <AddToCollectionModal isOpen={addToCollectionModalOpen} onClose={() => setAddToCollectionModalOpen(false)} photos={selectedPhotos} />
       <div id="tools" className="flex items-center w-full">
         <Input
           name="search"
@@ -152,7 +152,7 @@ export default function Photos() {
         />
         <IconButton
           icon={<PlusIcon className="h-10 p-1" />}
-          onClick={() => console.log("add to album")}
+          onClick={() => setAddToCollectionModalOpen(true)}
           disabled={loading}
         />
         <IconButton
