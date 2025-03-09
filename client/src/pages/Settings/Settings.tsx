@@ -90,7 +90,7 @@ export default function Settings() {
       />
 
       <span className="justify-between w-full pb-4">
-        <p className="text-4xl font-bold">Settings</p>
+        <p className="text-4xl font-bold indigo-underline">Settings</p>
         <IconButton
           icon={<MoonIcon className="h-10 p-1" />}
           onClick={toggleDarkMode}
