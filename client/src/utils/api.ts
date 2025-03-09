@@ -1,4 +1,4 @@
-import { Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
+import { Collection, Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
 
 
@@ -129,6 +129,24 @@ async function updateSetting(setting: { key: SettingKeyType, value: string }): P
   return { key: setting.key, value: setting.value, success: status === 200 };
 }
 
+async function getCollections() {
+  const { data } = await req("/collections");
+  return data;
+}
+
+async function createCollection(collection: { name: string, description: string }): Promise<Collection> {
+  const { data, status } = await req("/collections", {
+    method: "POST",
+    body: collection,
+  });
+
+  if (status !== 200) {
+    throw new Error("Failed to create collection");
+  }
+
+  return data;
+}
+
 const api = {
   req,
   getUser,
@@ -137,6 +155,8 @@ const api = {
   login,
   uploadPhotos,
   updateSetting,
+  getCollections,
+  createCollection,
 };
 
 export default api;
