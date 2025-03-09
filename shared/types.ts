@@ -62,3 +62,15 @@ export type Setting = {
 };
 
 export type SettingsObject = Record<SettingKeyType, string>;
+
+export type Collection = {
+  id: number;
+  userId: number;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAccessed: Date;
+}
+
+export type ProtoCollection = Omit<Collection, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'lastAccessed'>;

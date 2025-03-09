@@ -57,6 +57,26 @@ const userSettingsTable = mysqlTable(
   (table) => [primaryKey({ columns: [table.userId, table.key] })]
 );
 
+const collectionsTable = mysqlTable("collections", {
+  id: int().autoincrement().primaryKey(),
+  userId: int()
+    .references(() => usersTable.id)
+    .notNull(),
+  name: varchar({ length: 255 }).notNull(),
+  description: text(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+  lastAccessed: timestamp().defaultNow().notNull(),
+});
+
+const collectionPhotosTable = mysqlTable("collection_photos", {
+  collectionId: int()
+    .references(() => collectionsTable.id)
+    .notNull(),
+  photoId: int()
+    .references(() => photosTable.id)
+    .notNull(),
+});
 
 const globalSettingsTable = mysqlTable("global_settings", {
   id: int().autoincrement().primaryKey(),
@@ -71,4 +91,6 @@ export {
   googleIntegrationsTable,
   userSettingsTable,
   globalSettingsTable,
+  collectionsTable,
+  collectionPhotosTable,
 };
