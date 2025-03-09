@@ -1,7 +1,8 @@
-import Button from "./ui/Button";
-import { importFromGoogle } from "../utils/googleUtils";
-import { GoogleIcon, DropboxIcon, OneDriveIcon } from "./ui/CustomIcons";
-import UploadPhotosModal from "../components/modals/UploadPhotosModal";
+
+import UploadPhotosModal from "@frontend/components/modals/UploadPhotosModal";
+import { GoogleIcon, DropboxIcon, OneDriveIcon } from "@frontend/components/ui/CustomIcons";
+import { importFromGoogle } from "@frontend/utils/googleUtils";
+import  Button from "@frontend/components/ui/Button";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
