@@ -26,9 +26,9 @@ export default function Collections() {
             <img src={`/api/photos/${collection.coverPhotoId}?thumbnail=true`} alt={collection.name} className="w-full h-40 object-cover rounded-t-md" />
             <div className="p-4">
                 <p className="text-lg font-semibold">{collection.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{collection.description}</p>
+                <p className="text-sm text-gray-500 dark:text-subtitle-dark">{collection.description}</p>
             </div>
-            <span className="p-2 py-1 gap-2 border-t border-onyx-light text-gray-400">
+            <span className="p-2 py-1 gap-2 border-t border-onyx-light dark:text-subtitle-dark">
                 <FolderOpenIcon className="h-4" />
                 Created {moment(collection.createdAt).format('LL')}</span>
         </div>

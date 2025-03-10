@@ -55,7 +55,7 @@ export default function Layout() {
   return (
       <div className="flex flex-grow w-full">
         <UploadPhotosModal isOpen={uploadModal} onClose={() => {setUploadModal(false)}}/>
-        <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light p-3 relative">
+        <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light bg-onyx-gray p-3 relative">
           <div className="gap-2 flex flex-col" id="nav-links">
             <RouterLink
               to="/"

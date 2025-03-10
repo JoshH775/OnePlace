@@ -29,7 +29,7 @@ export default function SettingAction({
     <Panel className={`p-4 flex flex-row justify-between w-full ${className}`}>
       <div className="flex flex-col">
         <p className="font-semibold text-xl">{title}</p>
-        <p className="text-sm text-gray-500 dark:text-white">
+        <p className="text-sm text-gray-500 dark:text-subtitle-dark dark:text-whit">
             {subtitle}
         </p>
       </div>
