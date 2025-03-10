@@ -68,6 +68,7 @@ export type Collection = {
   userId: number;
   name: string;
   description: string | null;
+  coverPhotoId: number | null;
   createdAt: Date;
   updatedAt: Date;
   lastAccessed: Date;

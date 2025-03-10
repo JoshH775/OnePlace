@@ -64,6 +64,8 @@ const collectionsTable = mysqlTable("collections", {
     .notNull(),
   name: varchar({ length: 255 }).notNull(),
   description: text(),
+  coverPhotoId: int()
+    .references(() => photosTable.id),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
