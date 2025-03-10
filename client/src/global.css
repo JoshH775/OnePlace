@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-    --color-onyx: #1a1a1a; //dark background
+    --color-onyx: #1a1a1a; //dark root background
+    --color-onyx-gray: #202022; //dark background
     --color-onyx-light: #2b2b2e; //dark borders and dialogs
     --color-indigo: #4f39f6; //primary color
     --color-indigo-light: #6e5ff6; //primary color light
