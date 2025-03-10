@@ -8,17 +8,20 @@ import { useState } from "react";
 import NoCollections from "./NoCollections";
 import { Collection } from "@shared/types";
 import moment from "moment";
+import { Input } from "@headlessui/react";
+import _ from "lodash";
 
 export default function Collections() {
-  const { data: collections, isLoading } = useQuery({
-    queryKey: ["collections"],
-    queryFn: () => api.getCollections(),
-  });
 
-  //https://static.wikia.nocookie.net/beluga/images/b/bc/Rock.jpeg/revision/latest?cb=20221108202821
+
   const [createCollectionModalOpen, setCreateCollectionModalOpen] = useState(false);
 
-  console.log(collections);
+  const [query, setQuery] = useState("");
+
+  const { data: collections, isLoading } = useQuery({
+    queryKey: ["collections", query],
+    queryFn: () => api.getCollections(query),
+  });
 
   const CollectionCard = ({ collection }: { collection: Collection }) => {
     return (
@@ -35,14 +38,26 @@ export default function Collections() {
     )
   }
 
+  const debounceQuery = _.debounce((value: string) => setQuery(value), 500);
+
   return (
     <div className="p-5 w-full flex-grow flex flex-col">
       <CreateCollectionModal
         isOpen={createCollectionModalOpen}
         onClose={() => setCreateCollectionModalOpen(false)}
       />
+
+
       <div className="flex justify-between items-center p-2">
         <p className="font-bold indigo-underline text-3xl">Collections</p>
+        <Input
+          name="search"
+          type="text"
+          placeholder="Search collections..."
+          onChange={(e) => debounceQuery(e.target.value)}
+          className=" flex-grow mx-4 rounded-xl p-2 px-4 outline-transparent focus:outline-indigo text-base border border-gray-300 dark:border-onyx-light"
+        />
+        
         <Button
           className="bg-indigo rounded-md !w-fit"
           onClick={() => setCreateCollectionModalOpen(true)}

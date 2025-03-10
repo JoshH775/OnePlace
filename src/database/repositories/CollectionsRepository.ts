@@ -1,7 +1,7 @@
 import { Collection, ProtoCollection } from "@shared/types";
 import { db } from "../initDB";
 import { collectionsTable } from "../schema";
-import { eq } from "drizzle-orm";
+import { BinaryOperator, eq } from "drizzle-orm";
 
 export default class CollectionsRepository {
 
@@ -17,10 +17,16 @@ export default class CollectionsRepository {
     return collection ?? null;
   }
 
-  async getCollectionsForUser(userId: number): Promise<Collection[] | null> {
+  async getCollectionsForUser(userId: number, query: string | undefined): Promise<Collection[] | null> {
+
     try {
       const collections = await db.query.collectionsTable.findMany({
-        where: (collections, { eq }) => eq(collections.userId, userId),
+        where: (collections, { eq, like, and, or }) => {
+          if (query && query.length > 0) {
+            return and(eq(collections.userId, userId), or(like(collections.name, `%${query}%`), like(collections.description, `%${query}%`)));
+          }
+          return eq(collections.userId, userId);
+        }
       });
 
       return collections;

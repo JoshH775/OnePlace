@@ -129,8 +129,9 @@ async function updateSetting(setting: { key: SettingKeyType, value: string }): P
   return { key: setting.key, value: setting.value, success: status === 200 };
 }
 
-async function getCollections(): Promise<Collection[] | null> {
-  const { data } = await req("/collections");
+async function getCollections(query: string | undefined): Promise<Collection[] | null> {
+  const queryString = query ? `?query=${query}` : '';
+  const { data } = await req(`/collections${queryString}`);
   return data;
 }
 

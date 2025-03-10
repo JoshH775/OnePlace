@@ -20,8 +20,9 @@ export function registerCollectionRoutes(server: FastifyInstance) {
 
     server.get("/api/collections", async (req, res) => {
         const { id: userId } = req.user as { id: number };
+        const { query } = req.query as { query?: string };
 
-        const collections = await Collections.getCollectionsForUser(userId);
+        const collections = await Collections.getCollectionsForUser(userId, query);
 
         return collections;
     })
