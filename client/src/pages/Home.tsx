@@ -4,15 +4,10 @@ import NoPhotos from "./Photos/NoPhotos"
 export default function Home() {
 
 
-    const noPhotos = true
-
-
-
-
     return (
-        <div className="content w-full">
+        <div className="flex w-full">
 
-            {noPhotos && <NoPhotos />}
+            <NoPhotos />
 
         </div>
     )

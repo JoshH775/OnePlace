@@ -1,6 +1,6 @@
 export default function NoCollections() {
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center flex-grow">
       <div className="text-onyx dark:text-white text-2xl font-semibold">
         No collections found
       </div>

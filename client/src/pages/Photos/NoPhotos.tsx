@@ -16,7 +16,8 @@ export default function NoPhotos() {
   return (
     <>
       <UploadPhotosModal isOpen={uploadModalOpen} onClose={toggleUploadModal} />
-      <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit w-1/2 rounded-md p-12 max-w-[575px]">
+      <div className="flex-grow flex items-center justify-center w-full h-full">
+      <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit  rounded-md p-12 max-w-[575px]">
         <h1 className="text-2xl font-bold">No Photos Yet</h1>
         <p className="text-center">
           Import your photos from cloud services or upload them directly to get
@@ -48,6 +49,7 @@ export default function NoPhotos() {
           <ArrowUpTrayIcon className="h-7" />
           Upload Photos
         </Button>
+      </div>
       </div>
     </>
   );
