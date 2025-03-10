@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-    --color-onyx: #1a1a1a; //dark root background
-    --color-onyx-gray: #202022; //dark background
-    --color-onyx-light: #2b2b2e; //dark borders and dialogs
-    --color-indigo: #4f39f6; //primary color
-    --color-indigo-light: #6e5ff6; //primary color light
-    --color-subtitle-dark: #99a1af; //dark subtitle text
-    --color-subtitle-light: #6a7282; //light subtitle text
-    --color-light: #d1d5dc; //light borders
+    --color-onyx: #1a1a1a;
+    --color-onyx-gray: #202022;
+    --color-onyx-light: #2b2b2e;
+    --color-indigo: #4f39f6;
+    --color-indigo-light: #6e5ff6;
+    --color-subtitle-dark: #99a1af;
+    --color-subtitle-light: #6a7282;
+    --color-light: #d1d5dc;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
-
 
 hr {
     display: block;

@@ -1,15 +1,6 @@
 import { Input } from "@headlessui/react";
 import { useState } from "react";
 import IconButton from "../../components/ui/IconButton";
-import {
-  ArrowDownTrayIcon,
-  ArrowsUpDownIcon,
-  CheckCircleIcon as CheckIconOutline,
-  FunnelIcon,
-  PlusIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-import { CheckCircleIcon as CheckIconSolid } from "@heroicons/react/24/solid";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
 import NoPhotos from "./NoPhotos";
@@ -17,6 +8,8 @@ import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
+import { ArrowDownToLine, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { SelectOutline, SelectSolid } from "@frontend/components/ui/CustomIcons";
 
 
 export default function Photos() {
@@ -98,20 +91,20 @@ export default function Photos() {
         />
 
         <IconButton
-          icon={<ArrowsUpDownIcon className="h-10 p-1" />}
+          icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
           onClick={() => console.log("sort")}
           className="ml-2"
         />
         <IconButton
-          icon={<FunnelIcon className="h-10 p-1" />}
+          icon={<SlidersHorizontal className="h-10 w-10 p-1" />}
           onClick={() => console.log("filter")}
         />
         <IconButton
           icon={
             selectMode ? (
-              <CheckIconSolid className="w-10" />
+              <SelectSolid className="h-10 w-10 p-1" />
             ) : (
-              <CheckIconOutline className="w-10" />
+              <SelectOutline className="h-10 w-10 p-1" />
             )
           }
           onClick={() => setSelectMode((prevState) => !prevState)}
@@ -142,17 +135,17 @@ export default function Photos() {
         } ${loading ? "bg-gray-400 cursor-not-allowed " : ""}`}
       >
         <IconButton
-          icon={<TrashIcon className="h-10 p-1" />}
+          icon={<Trash2 className="h-10 p-1" />}
           onClick={() => console.log("delete")}
           disabled={loading}
         />
         <IconButton
-          icon={<PlusIcon className="h-10 p-1" />}
+          icon={<Plus className="h-10 p-1" />}
           onClick={() => setAddToCollectionModalOpen(true)}
           disabled={loading}
         />
         <IconButton
-          icon={<ArrowDownTrayIcon className="h-10 p-1" />}
+          icon={<ArrowDownToLine className="h-10 p-1" />}
           onClick={downloadSelected}
           disabled={loading}
         />
