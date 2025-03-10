@@ -2,9 +2,10 @@ import { Field } from "@headlessui/react"
 import Modal from "../ui/Modal"
 import Button from "../ui/Button"
 import LabelledInput from "../ui/LabelledInput"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import api from "@frontend/utils/api"
+import { Collection } from "@shared/types"
 
 type CreateCollectionModalProps = {
   isOpen: boolean
@@ -12,10 +13,15 @@ type CreateCollectionModalProps = {
 }
 
 export default function CreateCollectionModal({ isOpen, onClose }: CreateCollectionModalProps) {
+
+  const queryClient = useQueryClient()
     const { mutateAsync } = useMutation({
       mutationFn: (data: { name: string; description: string }) => {
         return api.createCollection(data)
       },
+      onSuccess: (collection) => {
+        queryClient.setQueryData(['collections'], (collections: Collection[]) => [...collections, collection])
+      }
     })
   
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
