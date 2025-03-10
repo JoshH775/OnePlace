@@ -129,7 +129,7 @@ async function updateSetting(setting: { key: SettingKeyType, value: string }): P
   return { key: setting.key, value: setting.value, success: status === 200 };
 }
 
-async function getCollections() {
+async function getCollections(): Promise<Collection[] | null> {
   const { data } = await req("/collections");
   return data;
 }
