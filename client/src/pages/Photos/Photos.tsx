@@ -33,11 +33,7 @@ export default function Photos() {
     queryFn: () => api.getPhotos(filters),
   });
 
-  if (!data || (data.length === 0 && !isLoading)) {
-    return (
-        <NoPhotos />
-    );
-  }
+
 
   const handleSelect = (photo: Photo) => {
     const index = selectedPhotos.findIndex((p) => p.id === photo.id);
