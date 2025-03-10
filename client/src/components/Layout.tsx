@@ -4,19 +4,22 @@ import {
   Link as RouterLink,
   useLocation,
 } from "react-router-dom";
-import {
-  FolderIcon,
-  Cog6ToothIcon,
-  PhotoIcon,
-  HomeIcon,
-  ShieldCheckIcon,
-  ClockIcon,
-  ArrowUpTrayIcon,
-} from "@heroicons/react/24/outline";
+
 import { useAuth } from "./AuthProvider";
 import Button from "./ui/Button";
 import UploadPhotosModal from "./modals/UploadPhotosModal";
 import { useState } from "react";
+
+import {
+  House as HouseIcon,
+  Radius as RadiusIcon,
+  FolderOpen as FolderIcon,
+  Settings as SettingsIcon,
+  Clock as ClockIcon,
+  Images,
+  ImagePlus,
+
+} from 'lucide-react'
 
 interface LinkProps {
   text: string;
@@ -28,8 +31,8 @@ const Link = ({ text, to, icon }: LinkProps) => {
   const { pathname } = useLocation();
   const bgClass =
     pathname === to
-      ? "bg-gray-200 dark:bg-onyx-light"
-      : "transition duration-125 hover:bg-gray-200 dark:hover:bg-onyx-light ";
+      ? "bg-onyx-light"
+      : "transition duration-125 hover:bg-onyx-light ";
   return (
     <RouterLink
       to={to}
@@ -55,21 +58,24 @@ export default function Layout() {
   return (
       <div className="flex flex-grow w-full">
         <UploadPhotosModal isOpen={uploadModal} onClose={() => {setUploadModal(false)}}/>
-        <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light bg-onyx-gray p-3 relative">
-          <div className="gap-2 flex flex-col" id="nav-links">
-            <RouterLink
+        <section id="sidebar" className="w-60 flex-col flex border-r border-gray-300 dark:border-onyx-light bg-onyx-gray text-white p-3 px-0 relative">
+        <RouterLink
               to="/"
-              className="text-3xl text-center font-semibold flex gap-2 items-center my-2"
+              className="text-3xl text-center font-bold flex gap-2 items-center my-2 h-10 px-3"
             >
-              <ShieldCheckIcon className="w-10" />
+              <RadiusIcon className="w-10 h-10 bg-indigo rounded-md p-2" />
               OnePlace
             </RouterLink>
 
-            <Link to="/" text="Home" icon={<HomeIcon className="w-6" />} />
+            <hr className="!border-onyx-light !mt-0"/>
+
+          <div className="gap-2 flex flex-col px-3" id="nav-links">
+          
+            <Link to="/" text="Home" icon={<HouseIcon className="w-6" />} />
             <Link
               to="/photos"
               text="Photos"
-              icon={<PhotoIcon className="w-6" />}
+              icon={<Images className="w-6" />}
             />
             <Link
               to="/collections"
@@ -79,17 +85,17 @@ export default function Layout() {
             <Link
               to="/settings"
               text="Settings"
-              icon={<Cog6ToothIcon className="w-6" />}
+              icon={<SettingsIcon className="w-6" />}
             />
           </div>
 
-          <hr />
+          <hr className="!border-onyx-light"/>
 
           <div id="recently-accessed" className="flex flex-col gap-2">
             
           <span className="flex gap-2 justify-center items-center">
-            <ClockIcon className="w-6 dark:text-gray-400" />
-            <p className="text-center text-lg font-semibold dark:text-gray-400">
+            <ClockIcon className="w-6 " />
+            <p className="text-center text-lg font-semibold ">
               Recently Accessed
             </p>
           </span>
@@ -107,7 +113,7 @@ export default function Layout() {
                   setUploadModal(true);
                 }}
               >
-                <ArrowUpTrayIcon className="w-6" />
+                <ImagePlus className="w-6" />
                 <p>Upload Photos</p>
               </Button>
             </div>
