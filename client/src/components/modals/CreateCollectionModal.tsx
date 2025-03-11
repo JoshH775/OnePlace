@@ -5,7 +5,6 @@ import LabelledInput from "../ui/LabelledInput"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import api from "@frontend/utils/api"
-import { Collection } from "@shared/types"
 
 type CreateCollectionModalProps = {
   isOpen: boolean
@@ -16,21 +15,21 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
 
   const queryClient = useQueryClient()
     const { mutateAsync } = useMutation({
-      mutationFn: (data: { name: string; description: string }) => {
-        return api.createCollection(data)
-      },
-      onSuccess: (collection) => {
-        queryClient.setQueryData(['collections'], (collections: Collection[]) => [...collections, collection])
+      mutationFn: async (data: { name: string; description: string }) => api.createCollection(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["collections"] })        
       }
     })
   
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       const name = (e.currentTarget.elements.namedItem("name") as HTMLInputElement).value
       const description = (e.currentTarget.elements.namedItem("description") as HTMLInputElement).value
   
+      const promise = mutateAsync({ name, description })
+
       toast.promise(
-        mutateAsync({ name, description }),
+        promise,
         {
           loading: "Creating collection...",
           success: "Collection created!",
