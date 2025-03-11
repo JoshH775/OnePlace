@@ -129,7 +129,7 @@ async function updateSetting(setting: { key: SettingKeyType, value: string }): P
   return { key: setting.key, value: setting.value, success: status === 200 };
 }
 
-async function getCollections(query: string | undefined): Promise<Collection[] | null> {
+async function getCollections(query?: string): Promise<Collection[] | null> {
   const queryString = query ? `?query=${query}` : '';
   const { data } = await req(`/collections${queryString}`);
   return data;
@@ -150,6 +150,21 @@ async function createCollection(collection: { name: string, description: string 
   }
 }
 
+async function addPhotosToCollection(collectionId: string, photoIds: number[]): Promise<boolean> {
+  try {
+    const { status } = await req(`/collections/${collectionId}/photos`, {
+      method: 'PUT',
+      body: { photoIds },
+      throwError: true,
+    });
+
+    return status === 200;
+  } catch (error) {
+    console.error("Error adding photos to collection:", error);
+    throw error;
+  }
+}
+
 const api = {
   req,
   getUser,
@@ -160,6 +175,7 @@ const api = {
   updateSetting,
   getCollections,
   createCollection,
+  addPhotosToCollection,
 };
 
 export default api;

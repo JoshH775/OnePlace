@@ -1,6 +1,6 @@
 import { Collection, ProtoCollection } from "@shared/types";
 import { db } from "../initDB";
-import { collectionsTable } from "../schema";
+import { collectionPhotosTable, collectionsTable } from "../schema";
 import { BinaryOperator, eq } from "drizzle-orm";
 
 export default class CollectionsRepository {
@@ -44,13 +44,13 @@ export default class CollectionsRepository {
     return collection ?? null;
   }
 
-  async update(options: ProtoCollection & { id: number }): Promise<boolean> {
-    try {
-      await db.update(collectionsTable).set(options).where(eq(collectionsTable.id, options.id));
-      return true;
-    } catch (error) {
-      console.error("Error updating collection:", error);
-      return false;
-    }
+  async update(collection: Collection): Promise<boolean> {
+    await db.update(collectionsTable).set(collection).where(eq(collectionsTable.id, collection.id));
+    return true;
+  }
+
+  async addPhotosToCollection(collectionId: number, photoIds: number[]): Promise<boolean> {
+    await db.insert(collectionPhotosTable).values(photoIds.map(photoId => ({ collectionId, photoId })));
+    return true;
   }
 }
