@@ -10,6 +10,7 @@ import { Photo } from "@shared/types";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
 import { ArrowDownToLine, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { SelectOutline, SelectSolid } from "@frontend/components/ui/CustomIcons";
+import Toolbar from "@frontend/components/ui/Toolbar";
 
 
 export default function Photos() {
@@ -112,7 +113,7 @@ export default function Photos() {
       </div>
 
       <div id="photos" className="flex flex-wrap gap-2 w-full">
-        {isLoading ? (
+        {isLoading || !data ? (
           <div>Loading...</div>
         ) : (
           data.map((photo) => {
@@ -128,28 +129,25 @@ export default function Photos() {
         )}
       </div>
 
-      <div
-        id="toolbar"
-        className={`flex items-center justify-center shadow-lg gap-6 w-fit rounded-full border dark:bg-onyx dark:border-onyx-light p-2 ease-out px-7 absolute transition-all top-[92%] ${
-          selectMode ? "scale-100 opacity-100" : "scale-80 opacity-0"
-        } ${loading ? "bg-gray-400 cursor-not-allowed " : ""}`}
-      >
+     
+     <Toolbar isOpen={selectMode} loading={loading}>
         <IconButton
-          icon={<Trash2 className="h-10 p-1" />}
+          icon={<Trash2 className="h-10 w-10 p-1" />}
           onClick={() => console.log("delete")}
           disabled={loading}
         />
         <IconButton
-          icon={<Plus className="h-10 p-1" />}
+          icon={<Plus className="h-10 w-10 p-1" />}
           onClick={() => setAddToCollectionModalOpen(true)}
           disabled={loading}
         />
         <IconButton
-          icon={<ArrowDownToLine className="h-10 p-1" />}
+          icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
           onClick={downloadSelected}
           disabled={loading}
         />
-      </div>
+      </Toolbar>
+
     </div>
   );
 }
