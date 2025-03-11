@@ -92,7 +92,7 @@ export default function Settings() {
       <span className="justify-between w-full pb-4">
         <p className="text-4xl font-bold indigo-underline">Settings</p>
         <IconButton
-          icon={<SunMoon className="h-10 p-1" />}
+          icon={<SunMoon className="h-10 w-10 p-1" />}
           onClick={toggleDarkMode}
         />
       </span>
