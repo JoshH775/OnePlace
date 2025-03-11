@@ -134,17 +134,17 @@ export default function Photos() {
         <IconButton
           icon={<Trash2 className="h-10 w-10 p-1" />}
           onClick={() => console.log("delete")}
-          disabled={loading}
+          disabled={loading || selectedPhotos.length === 0}
         />
         <IconButton
           icon={<Plus className="h-10 w-10 p-1" />}
           onClick={() => setAddToCollectionModalOpen(true)}
-          disabled={loading}
+          disabled={loading || selectedPhotos.length === 0}
         />
         <IconButton
           icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
           onClick={downloadSelected}
-          disabled={loading}
+          disabled={loading || selectedPhotos.length === 0}
         />
       </Toolbar>
 
