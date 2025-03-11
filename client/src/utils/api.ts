@@ -136,16 +136,18 @@ async function getCollections(query: string | undefined): Promise<Collection[] |
 }
 
 async function createCollection(collection: { name: string, description: string }): Promise<Collection> {
-  const { data, status } = await req("/collections", {
-    method: "POST",
-    body: collection,
-  });
+  try {
+    const { data } = await req('/collections', {
+      method: 'POST',
+      body: collection,
+      throwError: true,
+    });
 
-  if (status !== 200) {
-    throw new Error("Failed to create collection");
+    return data as Collection;
+  } catch (error) {
+    console.error("Error creating collection:", error);
+    throw error;
   }
-
-  return data;
 }
 
 const api = {

@@ -15,6 +15,7 @@ export function registerCollectionRoutes(server: FastifyInstance) {
             userId,
         });
 
+        res.status(201)
         return collection;
     })
 
