@@ -1,9 +1,10 @@
-import Button from "./ui/Button";
-import { importFromGoogle } from "../utils/googleUtils";
-import { GoogleIcon, DropboxIcon, OneDriveIcon } from "./ui/CustomIcons";
-import UploadPhotosModal from "../components/modals/UploadPhotosModal";
-import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+
+import UploadPhotosModal from "@frontend/components/modals/UploadPhotosModal";
+import { GoogleIcon, DropboxIcon, OneDriveIcon } from "@frontend/components/ui/CustomIcons";
+import { importFromGoogle } from "@frontend/utils/googleUtils";
+import  Button from "@frontend/components/ui/Button";
 import { useState } from "react";
+import { Upload } from "lucide-react";
 
 export default function NoPhotos() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -15,7 +16,8 @@ export default function NoPhotos() {
   return (
     <>
       <UploadPhotosModal isOpen={uploadModalOpen} onClose={toggleUploadModal} />
-      <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit w-1/2 rounded-md p-12 max-w-[575px]">
+      <div className="flex-grow flex items-center justify-center w-full h-full">
+      <div className="flex flex-col items-center justify-center gap-3 border border-gray-300 dark:border-onyx-light h-fit  rounded-md p-12 max-w-[575px]">
         <h1 className="text-2xl font-bold">No Photos Yet</h1>
         <p className="text-center">
           Import your photos from cloud services or upload them directly to get
@@ -44,9 +46,10 @@ export default function NoPhotos() {
         </div>
 
         <Button onClick={toggleUploadModal}>
-          <ArrowUpTrayIcon className="h-7" />
+          <Upload className="h-7" />
           Upload Photos
         </Button>
+      </div>
       </div>
     </>
   );

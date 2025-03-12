@@ -1,0 +1,2 @@
+ALTER TABLE `collections` ADD `coverPhotoId` int;--> statement-breakpoint
+ALTER TABLE `collections` ADD CONSTRAINT `collections_coverPhotoId_photos_id_fk` FOREIGN KEY (`coverPhotoId`) REFERENCES `photos`(`id`) ON DELETE no action ON UPDATE no action;

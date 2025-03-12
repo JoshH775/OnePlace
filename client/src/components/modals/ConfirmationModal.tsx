@@ -1,6 +1,6 @@
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { CircleAlert } from "lucide-react";
 
 type Props = {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export default function ConfirmationModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Are you sure?" icon={<ExclamationCircleIcon className="w-6"/>}>
+    <Modal isOpen={isOpen} onClose={onClose} title="Are you sure?" icon={<CircleAlert className="w-6"/>}>
       <div className="p-6 space-y-4">
         <p>{text}</p>
         <div className="flex justify-end space-x-2">

@@ -1,8 +1,8 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import IconButton from "./IconButton";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "motion/react";
 import { ReactNode } from "react";
+import { X } from "lucide-react";
 
 export type ModalProps = {
   isOpen: boolean;
@@ -52,7 +52,7 @@ export default function Modal({
                   </DialogTitle>
                 </div>
                 <IconButton
-                  icon={<XMarkIcon className="h-6" />}
+                  icon={<X className="h-6" />}
                   onClick={onClose}
                   className="text-gray-500 dark:hover:!bg-onyx"
                 />

@@ -7,7 +7,7 @@ type Props = {
     className?: string;
     variant?: "filled" | "outlined" | "danger";
     disabled?: boolean;
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const variantClasses = {
     'filled': "bg-indigo text-white data-[hover]:bg-indigo-700",
@@ -16,13 +16,16 @@ const variantClasses = {
 
 }
 
-export default function Button({ onClick = ()=>{}, children, className, variant = 'filled', disabled }: Props) {
-    const baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+export default function Button({ onClick = ()=>{}, children, className, variant = 'filled', disabled, ...rest }: Props) {
+    let baseClasses = "flex items-center gap-2 p-2 text-center font-semibold rounded-md cursor-pointer justify-center w-full transition duration-150 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 ";
+    if (disabled) {
+        baseClasses += "cursor-not-allowed";
+    }
 
     const fullClassname = baseClasses + " " + variantClasses[variant]  + " " +(className ?? '');
 
     return (
-        <HeadlessButton onClick={onClick} className={fullClassname} disabled={disabled}>
+        <HeadlessButton onClick={onClick} className={fullClassname} disabled={disabled} {...rest}>
             {children}
         </HeadlessButton>
     )

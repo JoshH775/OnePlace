@@ -9,6 +9,7 @@ import { registerGoogleRoutes } from "./googleRoutes";
 import { registerAuthRoutes } from "./authRoutes";
 import { registerUserRoutes } from "./userRoutes";
 import registerPhotosRoutes from "./photosRoutes";
+import { registerCollectionRoutes } from "./collectionRoutes";
 
 export function registerRoutes(
   server: FastifyInstance,
@@ -28,6 +29,7 @@ export function registerRoutes(
   registerAuthRoutes(server, fastifyPassport);
   registerUserRoutes(server);
   registerPhotosRoutes(server);
+  registerCollectionRoutes(server);
 
 }
 

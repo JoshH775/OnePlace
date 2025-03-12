@@ -12,7 +12,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   server.get("/api/photos/:id", async (req, res) => {
     const { id: userId } = req.user as User;
     const { id } = req.params as { id: string };
-    const { thumbnail } = req.query as { thumbnail: string };
+    const { thumbnail, download } = req.query as { thumbnail?: string, download?: string };
     const photo = await Photos.findById(parseInt(id), userId);
 
     if (!photo) {
@@ -22,6 +22,11 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
     const path = thumbnail === "true" ? `users/${userId}/thumbnails/${photo.filename}` : `users/${userId}/${photo.filename}`;
     const file = storage.bucket().file(path);
+
+    if (download === "true") {
+      const [buffer] = await file.download();
+      return res.send(buffer);
+    }
 
     const [url] = await file.getSignedUrl({
       action: "read",
@@ -107,7 +112,6 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
     return photos;
   });
 
-  //temp
   server.delete("/api/photos/delete-all", async (req, res) => {
     const { id } = req.user as User;
     await Photos.deleteAllPhotos(); //delete from my db

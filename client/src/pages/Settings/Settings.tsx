@@ -5,12 +5,12 @@ import Panel from "../../components/ui/Panel";
 import { GoogleClientIntegration, SettingKeyType } from "@shared/types";
 import { UserSettingsKeys } from "@shared/constants";
 import ToggleSetting from "./ToggleSetting";
-import { CloudIcon, MoonIcon, UserIcon } from "@heroicons/react/24/outline";
 import SettingAction from "./SettingAction";
 import IconButton from "@frontend/components/ui/IconButton";
 import { useReducer } from "react";
 import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
 import toast from "react-hot-toast";
+import { Cloud, SunMoon, User } from "lucide-react";
 
 export default function Settings() {
   const user = useAuth().user!;
@@ -90,16 +90,16 @@ export default function Settings() {
       />
 
       <span className="justify-between w-full pb-4">
-        <p className="text-4xl font-bold">Settings</p>
+        <p className="text-4xl font-bold indigo-underline">Settings</p>
         <IconButton
-          icon={<MoonIcon className="h-10 p-1" />}
+          icon={<SunMoon className="h-10 w-10 p-1" />}
           onClick={toggleDarkMode}
         />
       </span>
 
       <Panel className="w-full flex flex-col p-8">
         <span className="text-2xl font-bold indigo-underline">
-          <CloudIcon className="h-6 w-6 mr-2 stroke-2" />
+          <Cloud className="h-6 w-6 mr-2 stroke-2" />
           <p>Cloud Storage</p>
         </span>
         <p>
@@ -151,7 +151,7 @@ export default function Settings() {
       {/* ACCOUNT SETTINGS */}
       <Panel className="w-full flex flex-col mt-4 p-8">
         <span className="indigo-underline text-2xl font-bold">
-          <UserIcon className="h-6 w-6 mr-2 stroke-2" />
+          <User className="h-6 w-6 mr-2 stroke-2" />
           <p>Account</p>
         </span>
         <p>Manage your account and data.</p>
