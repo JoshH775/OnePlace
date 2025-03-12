@@ -23,7 +23,7 @@ const SkeletonCard = () => (
 )
 
 const CollectionCard = ({ collection, index }: { collection: Collection, index: number }) => {
-  console.log('Rendering collection card', collection);
+  const imgSrc = collection.coverPhotoId ? `/api/photos/${collection.coverPhotoId}?thumbnail=true` : "https://media.istockphoto.com/id/931643150/vector/picture-icon.jpg?s=612x612&w=0&k=20&c=St-gpRn58eIa8EDAHpn_yO4CZZAnGD6wKpln9l3Z3Ok=";
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,7 +33,7 @@ const CollectionCard = ({ collection, index }: { collection: Collection, index: 
     >
       <div className="shadow-lg dark:shadow-none border border-gray-300  dark:border-onyx-light rounded-md hover:border-indigo hover:text-indigo transition-all duration-200 ">
       <img
-        src={`/api/photos/${collection.coverPhotoId ?? 216}?thumbnail=true`}
+        src={imgSrc}
         alt={collection.name}
         className="w-full h-40 object-cover rounded-t-md"
       />
