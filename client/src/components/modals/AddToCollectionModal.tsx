@@ -98,11 +98,11 @@ export default function AddToCollectionModal({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
               exit={{ opacity: 0, y: -10 }}
-              className="w-full dark:bg-onyx-gray rounded-lg flex flex-col gap-2"
+              className="w-full dark:bg-onyx-gray rounded-lg flex flex-col gap-2 shadow-xl border dark:border-none border-light"
             >
               {filteredCollections.map((collection) => {
                 const isSelected = selectedCollection?.id === collection.id;
-                return <span key={collection.id} className="p-2 justify-between cursor-pointer hover:dark:bg-onyx-light rounded-lg" onClick={() => handleSelectCollection(collection)}>
+                return <span key={collection.id} className="p-2 justify-between cursor-pointer hover:dark:bg-onyx-light hover:bg-light rounded-lg" onClick={() => handleSelectCollection(collection)}>
                   {collection.name}
                 {isSelected && <Check className="w-5 h-5" />}</span>
               })}
