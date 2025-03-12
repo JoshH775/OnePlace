@@ -90,7 +90,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         //Upload thumbnail
         const thumbnailPath = `users/${userId}/thumbnails/${metadata.filename}`;
         const thumbnailFile = storage.bucket().file(thumbnailPath);
-        await thumbnailFile.save(await sharp(buffer).resize(250, 250).toBuffer());
+        await thumbnailFile.save(await sharp(buffer).resize(200, 200).webp().toBuffer());
 
       } catch (error) {
         console.error(`Error saving file: ${metadata.filename}: `, error);
@@ -114,7 +114,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
   server.delete("/api/photos/delete-all", async (req, res) => {
     const { id } = req.user as User;
-    await Photos.deleteAllPhotos(); //delete from my db
+    await Photos.deleteAllForUser(id); //delete from my db
     res.send({ success: true });
     await hardDeleteFromFirebase(id);
   });
