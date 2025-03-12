@@ -65,7 +65,7 @@ const collectionsTable = mysqlTable("collections", {
   name: varchar({ length: 255 }).notNull(),
   description: text(),
   coverPhotoId: int()
-    .references(() => photosTable.id),
+    .references(() => photosTable.id, { onDelete: "set null"}),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
   lastAccessed: timestamp().defaultNow().notNull(),
@@ -76,7 +76,7 @@ const collectionPhotosTable = mysqlTable("collection_photos", {
     .references(() => collectionsTable.id)
     .notNull(),
   photoId: int()
-    .references(() => photosTable.id)
+    .references(() => photosTable.id, { onDelete: "cascade" })
     .notNull(),
 });
 
