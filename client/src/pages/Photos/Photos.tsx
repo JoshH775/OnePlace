@@ -3,7 +3,7 @@ import { Suspense, useState } from "react";
 import IconButton from "../../components/ui/IconButton";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-]import PhotoTile from "./PhotoTile";
+import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
