@@ -1,10 +1,11 @@
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
+import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
 import IconButton from "@frontend/components/ui/IconButton";
 import Toolbar from "@frontend/components/ui/Toolbar";
 import api from "@frontend/utils/api";
 import { Photo } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -12,41 +13,33 @@ import { OverlayRenderProps } from "react-photo-view/dist/types";
 
 type Props = {
   overlayProps: OverlayRenderProps;
-  photo: Photo;
+  photo: Photo | null;
 };
 
 export default function PhotoOverlay({ overlayProps, photo }: Props) {
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
-
-  const { mutate: updatePhoto } = useMutation({
-    mutationFn: async (updatedPhoto: Photo) => {
-        toast.loading("Updating photo...");
-        await api.req(`/photos/${photo.id}`, {
-            method: "PUT",
-            body: {
-                ...updatedPhoto,
-            }
-        });
-        toast.dismiss();
-        toast.success("Photo updated!");
-    },
-  });
 
   const { mutate: deletePhoto } = useMutation({
     mutationFn: async () => {
       toast.loading("Deleting photo...");
-      await api.req(`/photos/${photo.id}`, {
+      await api.req(`/photos/${photo!.id}`, {
         method: "DELETE",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
+        console.log('onSuccesss')
+    queryClient.invalidateQueries({ queryKey: ["photos"] });
       toast.dismiss();
       toast.success("Photo deleted!");
     },
   });
+
+
+  if (!photo) return null;
 
   return (
     <>
@@ -55,6 +48,16 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
         photos={[photo]}
         onClose={() => setCollectionModalOpen(false)}
       />
+
+      <ConfirmationModal
+        isOpen={confirmModalOpen}
+        onConfirm={() => {
+          deletePhoto();
+          overlayProps.onClose();
+        }}
+        onClose={() => setConfirmModalOpen(false)}
+        text="Are you sure you want to delete this photo?"
+        />
 
       {overlayProps.overlayVisible && (
         <div className={` absolute z-20 h-full flex flex-col w-full`}>
@@ -81,7 +84,7 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
             transition={{ duration: 0.3, delay: 0.4 }}
             className="absolute bottom-10 left-[50%] w-full flex justify-between items-center "
           >
-            <Toolbar isOpen className="static">
+            <Toolbar isOpen className="static dark:bg-onyx-light/60">
               <IconButton
                 icon={<Plus className="w-7 h-" />}
                 onClick={() => {
@@ -89,10 +92,16 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
                   console.log("ehehehehehe");
                 }}
               />
+            <IconButton
+                icon={<Pencil className="w-7 h-7" />}
+                onClick={() => {
+                }}
+                />
               <IconButton
-                icon={<Trash className="w-7 h-7" />}
-                onClick={deletePhoto}
+                icon={<Trash2 className="w-7 h-7" />}
+                onClick={() => setConfirmModalOpen(true)}
               />
+
             </Toolbar>
           </motion.div>
         </div>
