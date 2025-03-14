@@ -5,7 +5,6 @@ import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 import Spinner from "../ui/Spinner";
 import { Collection, Photo } from "@shared/types";
-import _ from "lodash";
 import Input from "../ui/Input";
 import { Check } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
