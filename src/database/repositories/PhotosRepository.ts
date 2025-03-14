@@ -35,6 +35,16 @@ export default class PhotosRepository {
       return null
     }
   }
+
+  async update(photo: Photo, userId: number): Promise<Photo | null> {
+    await db.update(photosTable).set(photo).where(eq(photosTable.userId, userId))
+    const updatedPhoto = await db.query.photosTable.findFirst({
+      where: (photo, { eq }) => eq(photosTable.id, photo.id)
+    })
+
+    return updatedPhoto ?? null
+
+  }
   
   async deleteAllForUser(userId: number) {
     await db.delete(photosTable).where(eq(photosTable.userId, userId))
@@ -45,8 +55,8 @@ export default class PhotosRepository {
       where: (photos, { eq }) => eq(photos.userId, userId),
   })}
 
-  async deleteAllPhotos() {
-    await db.delete(photosTable)
+  async deletePhotoById(id: number) {
+    await db.delete(photosTable).where(eq(photosTable.id, id))
   }
 }
 
