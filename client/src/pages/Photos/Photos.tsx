@@ -1,10 +1,9 @@
 import { Input } from "@headlessui/react";
 import { Suspense, useState } from "react";
 import IconButton from "../../components/ui/IconButton";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-import NoPhotos from "./NoPhotos";
-import PhotoTile from "./PhotoTile";
+]import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
@@ -15,9 +14,9 @@ import {
 } from "@frontend/components/ui/CustomIcons";
 import Toolbar from "@frontend/components/ui/Toolbar";
 import Header from "@frontend/components/Header";
-import PhotoViewer from "./PhotoViewer";
 import Spinner from "@frontend/components/ui/Spinner";
 import { PhotoProvider } from "react-photo-view";
+import PhotoOverlay from "./PhotoOverlay";
 
 
 export default function Photos() {
@@ -26,11 +25,12 @@ export default function Photos() {
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false);
 
+  const queryClient = useQueryClient();
+
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
   const [currentPhotoId, setCurrentPhotoId] = useState<number | null>(null);
 
   const filters = {};
@@ -38,6 +38,20 @@ export default function Photos() {
     queryKey: ["photos", filters],
     queryFn: () => api.getPhotos(filters),
   });
+
+  const { mutate: bulkDelete } = useMutation({
+    mutationFn: async (photoIds: number[]) => {
+      setLoading(true);
+      await api.req("/photos/bulk-delete", {
+        method: "POST",
+        body: { ids: photoIds },
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
+      setLoading(false);
+    }
+  })
 
   const handleClick = (photo: Photo) => {
     if (selectMode) {
@@ -137,7 +151,9 @@ export default function Photos() {
 
       <Suspense fallback={<Spinner />}>
         <div id="photos" className="flex flex-wrap gap-2 w-full">
-          <PhotoProvider
+          {data.length > 0 && <PhotoProvider
+            overlayRender={(props) => <PhotoOverlay overlayProps={props} photo={data[props.index]} />}
+            bannerVisible={false}
           >
           {data.map((photo) => {
             return (
@@ -149,7 +165,8 @@ export default function Photos() {
               />
             );
           })}
-          </PhotoProvider>
+          </PhotoProvider>}
+          
         </div>
       </Suspense>
 
@@ -158,7 +175,7 @@ export default function Photos() {
       <Toolbar isOpen={selectMode} loading={loading}>
         <IconButton
           icon={<Trash2 className="h-10 w-10 p-1" />}
-          onClick={() => console.log("delete")}
+          onClick={() => {bulkDelete(selectedPhotos.map((p) => p.id))}}
           disabled={loading || selectedPhotos.length === 0}
         />
         <IconButton
