@@ -1,5 +1,7 @@
 import { Photo } from "@shared/types";
 import { useState } from "react";
+import "react-photo-view/dist/react-photo-view.css";
+import { PhotoView } from "react-photo-view";
 
 type Props = {
   photo: Photo;
@@ -18,7 +20,18 @@ export default function PhotoTile(props: Props) {
       setSelected(!selected);
     }
     onClick(photo);
-  }
+  };
+
+  const ImageComponent = (
+    <img
+      src={`/api/photos/${photo.id}?thumbnail=true`}
+      alt={photo.alias ?? ""}
+      className={`w-full h-full object-cover rounded-lg ${
+        loading ? "hidden" : ""
+      }`}
+      onLoad={() => setLoading(false)}
+    />
+  );
 
   return (
     <div
@@ -30,7 +43,11 @@ export default function PhotoTile(props: Props) {
     >
       {selectMode && (
         <div className="absolute top-2 left-2 w-6 h-6 bg-white rounded-full border-2 border-indigo-600 flex items-center justify-center">
-          <div className={`w-3 h-3 bg-indigo-600 rounded-full ${selected ? 'scale-100' : 'scale-0'} transition-transform duration-50`}></div>
+          <div
+            className={`w-3 h-3 bg-indigo-600 rounded-full ${
+              selected ? "scale-100" : "scale-0"
+            } transition-transform duration-50`}
+          ></div>
         </div>
       )}
 
@@ -38,12 +55,12 @@ export default function PhotoTile(props: Props) {
         <div className="w-full h-full bg-gray-800 animate-pulse rounded-lg" />
       )}
 
-      <img
-        src={`/api/photos/${photo.id}?thumbnail=true`}
-        alt={photo.alias ?? ""}
-        className={`w-full h-full object-cover rounded-lg ${loading ? 'hidden' : ''}`}
-        onLoad={() => setLoading(false)}
-      />
+      {selectMode ? (
+        ImageComponent
+      ) : (
+        <PhotoView src={`/api/photos/${photo.id}`}
+        >{ImageComponent}</PhotoView>
+      )}
     </div>
   );
 }

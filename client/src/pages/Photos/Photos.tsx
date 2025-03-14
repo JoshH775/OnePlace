@@ -17,6 +17,8 @@ import Toolbar from "@frontend/components/ui/Toolbar";
 import Header from "@frontend/components/Header";
 import PhotoViewer from "./PhotoViewer";
 import Spinner from "@frontend/components/ui/Spinner";
+import { PhotoProvider } from "react-photo-view";
+
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
@@ -51,7 +53,7 @@ export default function Photos() {
       console.log("Opening photo viewer");
       setCurrentPhotoId(photo.id);
       console.log(photo.id, currentPhotoId);
-      setPhotoViewerOpen(true);
+      // setPhotoViewerOpen(true);
     }
   };
 
@@ -135,6 +137,8 @@ export default function Photos() {
 
       <Suspense fallback={<Spinner />}>
         <div id="photos" className="flex flex-wrap gap-2 w-full">
+          <PhotoProvider
+          >
           {data.map((photo) => {
             return (
               <PhotoTile
@@ -145,15 +149,11 @@ export default function Photos() {
               />
             );
           })}
+          </PhotoProvider>
         </div>
       </Suspense>
 
-      <PhotoViewer
-        startingPhotoId={currentPhotoId}
-        photos={data}
-        isOpen={photoViewerOpen}
-        onClose={() => setPhotoViewerOpen(false)}
-      />
+
 
       <Toolbar isOpen={selectMode} loading={loading}>
         <IconButton
