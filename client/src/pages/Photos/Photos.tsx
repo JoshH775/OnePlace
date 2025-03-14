@@ -1,7 +1,7 @@
 import { Input } from "@headlessui/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import IconButton from "../../components/ui/IconButton";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
 import NoPhotos from "./NoPhotos";
 import PhotoTile from "./PhotoTile";
@@ -9,34 +9,49 @@ import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
 import { ArrowDownToLine, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { SelectOutline, SelectSolid } from "@frontend/components/ui/CustomIcons";
+import {
+  SelectOutline,
+  SelectSolid,
+} from "@frontend/components/ui/CustomIcons";
 import Toolbar from "@frontend/components/ui/Toolbar";
-
+import Header from "@frontend/components/Header";
+import PhotoViewer from "./PhotoViewer";
+import Spinner from "@frontend/components/ui/Spinner";
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
 
-  const [addToCollectionModalOpen, setAddToCollectionModalOpen] = useState(false);
+  const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
+    useState(false);
+
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
+  const [currentPhotoId, setCurrentPhotoId] = useState<number | null>(null);
+
   const filters = {};
-  const { data, isLoading } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["photos", filters],
     queryFn: () => api.getPhotos(filters),
   });
 
-
-
-  const handleSelect = (photo: Photo) => {
-    const index = selectedPhotos.findIndex((p) => p.id === photo.id);
-    if (index === -1) {
-      setSelectedPhotos((prevState) => [...prevState, photo]);
+  const handleClick = (photo: Photo) => {
+    if (selectMode) {
+      const index = selectedPhotos.findIndex((p) => p.id === photo.id);
+      if (index === -1) {
+        setSelectedPhotos((prevState) => [...prevState, photo]);
+      } else {
+        setSelectedPhotos((prevState) =>
+          prevState.filter((p) => p.id !== photo.id)
+        );
+      }
     } else {
-      setSelectedPhotos((prevState) =>
-        prevState.filter((p) => p.id !== photo.id)
-      );
+      console.log("Opening photo viewer");
+      setCurrentPhotoId(photo.id);
+      console.log(photo.id, currentPhotoId);
+      setPhotoViewerOpen(true);
     }
   };
 
@@ -70,18 +85,22 @@ export default function Photos() {
     //   a.click();
     //   document.body.removeChild(a);
 
-
     // } catch (error) {
     //   console.error("Error downloading photos:", error);
     // } finally {
     //   setLoading(false);
     // }
-  }
+  };
 
   return (
-    <div className="w-full flex flex-col !justify-start p-6 gap-3 relative">
-      <AddToCollectionModal isOpen={addToCollectionModalOpen} onClose={() => setAddToCollectionModalOpen(false)} photos={selectedPhotos} />
-      <div id="tools" className="flex items-center w-full">
+    <div className="w-full flex flex-col !justify-start p-5 gap-3 relative">
+      <AddToCollectionModal
+        isOpen={addToCollectionModalOpen}
+        onClose={() => setAddToCollectionModalOpen(false)}
+        photos={selectedPhotos}
+      />
+      <Header className="gap-4">
+        <p className="text-3xl indigo-underline font-bold">Photos</p>
         <Input
           name="search"
           type="text"
@@ -91,46 +110,52 @@ export default function Photos() {
           className="w-full rounded-xl p-2 px-4 outline-none text-base border border-gray-300 dark:border-onyx-light"
         />
 
-        <IconButton
-          icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
-          onClick={() => console.log("sort")}
-          className="ml-2"
-        />
-        <IconButton
-          icon={<SlidersHorizontal className="h-10 w-10 p-1" />}
-          onClick={() => console.log("filter")}
-        />
-        <IconButton
-          icon={
-            selectMode ? (
-              <SelectSolid className="h-10 w-10 p-1" />
-            ) : (
-              <SelectOutline className="h-10 w-10 p-1" />
-            )
-          }
-          onClick={() => setSelectMode((prevState) => !prevState)}
-        />
-      </div>
+        <div className="flex gap-1">
+          <IconButton
+            icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
+            onClick={() => console.log("sort")}
+            className="ml-2"
+          />
+          <IconButton
+            icon={<SlidersHorizontal className="h-10 w-10 p-1" />}
+            onClick={() => console.log("filter")}
+          />
+          <IconButton
+            icon={
+              selectMode ? (
+                <SelectSolid className="h-10 w-10 p-1" />
+              ) : (
+                <SelectOutline className="h-10 w-10 p-1" />
+              )
+            }
+            onClick={() => setSelectMode((prevState) => !prevState)}
+          />
+        </div>
+      </Header>
 
-      <div id="photos" className="flex flex-wrap gap-2 w-full">
-        {isLoading || !data ? (
-          <div>Loading...</div>
-        ) : (
-          data.map((photo) => {
+      <Suspense fallback={<Spinner />}>
+        <div id="photos" className="flex flex-wrap gap-2 w-full">
+          {data.map((photo) => {
             return (
               <PhotoTile
                 key={photo.id}
                 photo={photo}
                 selectMode={selectMode}
-                onSelect={handleSelect}
+                onClick={handleClick}
               />
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      </Suspense>
 
-     
-     <Toolbar isOpen={selectMode} loading={loading}>
+      <PhotoViewer
+        startingPhotoId={currentPhotoId}
+        photos={data}
+        isOpen={photoViewerOpen}
+        onClose={() => setPhotoViewerOpen(false)}
+      />
+
+      <Toolbar isOpen={selectMode} loading={loading}>
         <IconButton
           icon={<Trash2 className="h-10 w-10 p-1" />}
           onClick={() => console.log("delete")}
@@ -147,7 +172,6 @@ export default function Photos() {
           disabled={loading || selectedPhotos.length === 0}
         />
       </Toolbar>
-
     </div>
   );
 }

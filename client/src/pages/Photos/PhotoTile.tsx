@@ -4,22 +4,21 @@ import { useState } from "react";
 type Props = {
   photo: Photo;
   selectMode: boolean;
-  onSelect: (photo: Photo) => void;
+  onClick: (photo: Photo) => void;
 };
 
 export default function PhotoTile(props: Props) {
-  const { photo, selectMode, onSelect } = props;
+  const { photo, selectMode, onClick } = props;
 
   const [selected, setSelected] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleClick = () => {
     if (selectMode) {
       setSelected(!selected);
-      onSelect(photo);
-    } else {
-      console.log("open photo modal", photo.filename);
     }
-  };
+    onClick(photo);
+  }
 
   return (
     <div
@@ -35,11 +34,15 @@ export default function PhotoTile(props: Props) {
         </div>
       )}
 
+      {loading && (
+        <div className="w-full h-full bg-gray-800 animate-pulse rounded-lg" />
+      )}
+
       <img
         src={`/api/photos/${photo.id}?thumbnail=true`}
         alt={photo.alias ?? ""}
-        className="w-full h-full object-cover rounded-lg"
-        loading="lazy"
+        className={`w-full h-full object-cover rounded-lg ${loading ? 'hidden' : ''}`}
+        onLoad={() => setLoading(false)}
       />
     </div>
   );
