@@ -17,6 +17,7 @@ import Header from "@frontend/components/Header";
 import Spinner from "@frontend/components/ui/Spinner";
 import { PhotoProvider } from "react-photo-view";
 import PhotoOverlay from "./PhotoOverlay";
+import toast from "react-hot-toast";
 
 
 export default function Photos() {
@@ -31,8 +32,6 @@ export default function Photos() {
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [currentPhotoId, setCurrentPhotoId] = useState<number | null>(null);
-
   const filters = {};
   const { data } = useSuspenseQuery({
     queryKey: ["photos", filters],
@@ -42,13 +41,16 @@ export default function Photos() {
   const { mutate: bulkDelete } = useMutation({
     mutationFn: async (photoIds: number[]) => {
       setLoading(true);
+      toast.loading("Deleting photos...");
       await api.req("/photos/bulk-delete", {
         method: "POST",
         body: { ids: photoIds },
       })
     },
     onSuccess: () => {
+      toast.dismiss()
       queryClient.invalidateQueries({ queryKey: ["photos"] });
+      toast.success("Photos deleted!");
       setLoading(false);
     }
   })
@@ -65,8 +67,7 @@ export default function Photos() {
       }
     } else {
       console.log("Opening photo viewer");
-      setCurrentPhotoId(photo.id);
-      console.log(photo.id, currentPhotoId);
+
       // setPhotoViewerOpen(true);
     }
   };
@@ -152,7 +153,7 @@ export default function Photos() {
       <Suspense fallback={<Spinner />}>
         <div id="photos" className="flex flex-wrap gap-2 w-full">
           {data.length > 0 && <PhotoProvider
-            overlayRender={(props) => <PhotoOverlay overlayProps={props} photo={data[props.index]} />}
+            overlayRender={(props) => <PhotoOverlay overlayProps={props} photo={getOverlayPhoto(props.index, data)} />}
             bannerVisible={false}
           >
           {data.map((photo) => {
@@ -191,4 +192,11 @@ export default function Photos() {
       </Toolbar>
     </div>
   );
+}
+
+function getOverlayPhoto(index: number, photos: Photo[]) {
+  if (photos.length === 0) return null;
+  if (index < 0) return photos[0];
+  if (index >= photos.length) return photos[photos.length - 1];
+  return photos[index];
 }
