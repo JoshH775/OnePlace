@@ -121,8 +121,17 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
   server.put("/api/photos", async (req, res) => {
     const { id: userId } = req.user as User;
-    const { photo } = req.body as { photo: Photo }
+    const { photo: newPhoto } = req.body as { photo: Photo }
+
+    if (!newPhoto) return res.status(400)
+
+    const photo = await Photos.findById(newPhoto.id, userId)
+    if (!photo) return res.status(404)
     
+    await Photos.update(newPhoto, userId)
+
+    res.status(201)
+    return { success: true }
 
 
   })
