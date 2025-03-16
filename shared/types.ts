@@ -35,11 +35,17 @@ export interface Photo {
   alias: string | null;
   type: string;
   location: string | null;
-  date: Date | null;
+  date: string | null;
   googleId: string | null;
-  createdAt: Date;
-  lastAccessed: Date;
+  createdAt: string;
+  lastAccessed: string;
   compressed: boolean;
+}
+
+export interface UpdatablePhotoProperties {
+  filename?: Photo['filename']
+  location?: Photo['location']
+  date?: Photo['date']
 }
 
 export type ProtoPhoto = Omit<
