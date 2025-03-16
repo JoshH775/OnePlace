@@ -44,18 +44,12 @@ export default class PhotosRepository {
       location: photo.location,
     };
 
-
-    console.log(photo)
-
-    console.log(photoValues)
-
     await db
       .update(photosTable)
       .set(photoValues)
       .where(and(eq(photosTable.id, photo.id), eq(photosTable.userId, userId)))
 
       await db.select().from(photosTable).where(eq(photosTable.id, photo.id)) 
-
 
   }
 
