@@ -42,6 +42,12 @@ export interface Photo {
   compressed: boolean;
 }
 
+export type Filters = {
+  collectionId?: number
+  dateRange?: { min: string, max: string}
+  uploadDateRange?: { min: string, max: string}
+}
+
 export interface UpdatablePhotoProperties {
   filename?: Photo['filename']
   location?: Photo['location']
