@@ -1,6 +1,13 @@
 import Button from "@frontend/components/ui/Button";
-import { Photo } from "@shared/types";
-import { Box, Calendar, CalendarFold, MapPin, Save, Square, SquarePen } from "lucide-react";
+import { Photo, UpdatablePhotoProperties } from "@shared/types";
+import {
+  Box,
+  Calendar,
+  CalendarFold,
+  MapPin,
+  Save,
+  SquarePen,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import moment from "moment";
 import { useState } from "react";
@@ -8,6 +15,7 @@ import Input from "@frontend/components/ui/Input";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@frontend/utils/api";
 import toast from "react-hot-toast";
+import { TimestampFormat } from "@shared/constants";
 
 type Props = {
   photo: Photo;
@@ -31,7 +39,11 @@ const Field = ({
   onClick,
   type = "text",
 }: FieldProps) => {
-  const [input, setInput] = useState(type === "date" ? moment(value).format('YYYY-MM-DD') : value);
+  const [input, setInput] = useState(value);
+
+  if (!edit && type === "date") {
+    value = moment(value).format("LLL");
+  }
 
   return (
     <div
@@ -52,7 +64,7 @@ const Field = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="!bg-white py-1 !m-0 field-input"
-            type={type === "date" ? 'date' : undefined}
+            type={type === "date" ? "datetime-local" : undefined}
           />
         )}
 
@@ -69,66 +81,76 @@ const Field = ({
 export default function PhotoInfoPanel({ photo, isOpen }: Props) {
   const [editMode, setEditMode] = useState(false);
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { mutateAsync } = useMutation({
     mutationFn: async (photo: Photo) => {
-      const { status } = await api.req('/photos', {
-        method: 'PUT',
-        body: { photo }
-      })
+      const { status } = await api.req("/photos", {
+        method: "PUT",
+        body: { photo },
+      });
 
       if (status !== 201) {
-        throw Error('Photo update failed')
+        throw Error("Photo update failed");
       }
 
-      return photo
+      return photo;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['photos']})
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
+    },
+  });
 
   const savePhoto = () => {
-    setEditMode(false)
-    const inputs = document.querySelectorAll<HTMLInputElement>('.field-input');
+    setEditMode(false);
+    const elements = Array.from(
+      document.querySelectorAll<HTMLInputElement>(".field-input")
+    );
 
-    const updatedFields: Record<string, string> = {};
-    inputs.forEach((input) => {
-      if (input.id !== 'File Size') updatedFields[input.id] = input.value; 
+    const labelMap: Record<string, keyof UpdatablePhotoProperties> = {
+      "Date Taken": "date",
+      Location: "location",
+      filename: "filename",
+    };
+
+    const values: Record<string, string> = {};
+
+    elements.forEach((element) => {
+      switch (element.id) {
+        case "Date Taken":
+          values[labelMap[element.id]] = moment(element.value).format(
+            TimestampFormat
+          );
+          break;
+        default:
+          values[labelMap[element.id]] = element.value;
+      }
     });
 
-    const labelMap: Record<string, keyof Photo> = {
-      'Date Taken': 'date',
-      'Location': 'location',
-    }
-
     const updatedPhoto: Photo = {
-      ...photo
-    }
+      ...photo,
+      ...values,
+    };
 
-    for (const [key, value] of Object.entries(updatedFields)) {
-      updatedPhoto[labelMap[key]] = value
+    if (JSON.stringify(photo) === JSON.stringify(updatedPhoto)) {
+      return;
     }
-
-    console.log(updatedPhoto)
 
     toast.promise(mutateAsync(updatedPhoto), {
-      success: 'Photo successfully updated!',
-      loading: 'Updating Photo...',
-      error: 'Update failed!'
-    })
-
-  }
+      success: "Photo successfully updated!",
+      loading: "Updating Photo...",
+      error: "Update failed!",
+    });
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           className="flex flex-col bg-white text-black h-full pointer-events-auto left-0 place-self-end w-90 p-4"
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
+          initial={{ x: 30, opacity: 0 }}
+          animate={{ x: 0, opacity: 100 }}
+          exit={{ x: 30, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           <span className="justify-between gap-4 mb-6">
@@ -137,12 +159,22 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
               <p className="text-sm text-subtitle-light">{photo.filename}</p>
             </div>
             <Button
-              onClick={editMode ? savePhoto : () => {setEditMode(true)}}
+              onClick={editMode ? savePhoto : () => setEditMode(true)}
               variant="outlined"
               className="!text-black hover:!text-white !w-fit text-base"
             >
               <span className="gap-2">
-                {editMode ? <><Save className="w-4 h-4" /><p>Save</p></> : <><SquarePen className="w-4 h-4" /><p>Edit</p></>}
+              {editMode ? (
+                <>
+                <Save className="w-4 h-4" />
+                Save
+                </>
+              ) : (
+                <>
+                <SquarePen className="w-4 h-4" />
+                Edit
+                </>
+              )}
               </span>
             </Button>
           </span>
@@ -154,7 +186,7 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
           <Field
             icon={<CalendarFold className="text-subtitle-light w-5.5 h-5.5" />}
             label="Date Uploaded"
-            value={moment(photo.createdAt).format("LLL")}
+            value={photo.createdAt}
             edit={false}
             type="date"
           />
@@ -163,7 +195,7 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
             <Field
               icon={<Calendar className="text-subtitle-light w-5.5 h-5.5" />}
               label="Date Taken"
-              value={moment(photo.date).format("LLL")}
+              value={photo.date}
               edit={editMode}
               type="date"
             />
