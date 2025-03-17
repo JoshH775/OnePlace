@@ -49,9 +49,9 @@ export type Filters = {
 }
 
 export interface UpdatablePhotoProperties {
-  filename?: Photo['filename']
   location?: Photo['location']
   date?: Photo['date']
+  alias?: Photo['alias']
 }
 
 export type ProtoPhoto = Omit<
@@ -81,9 +81,9 @@ export type Collection = {
   name: string;
   description: string | null;
   coverPhotoId: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  lastAccessed: Date;
+  createdAt: string;
+  updatedAt: string;
+  lastAccessed: string;
 }
 
 export type ProtoCollection = Omit<Collection, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'lastAccessed'>;
