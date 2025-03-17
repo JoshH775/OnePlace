@@ -1,7 +1,7 @@
-import { Collection, ProtoCollection } from "@shared/types";
+import { Collection } from "@shared/types";
 import { db } from "../initDB";
 import { collectionPhotosTable, collectionsTable } from "../schema";
-import { BinaryOperator, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export default class CollectionsRepository {
 
@@ -52,5 +52,9 @@ export default class CollectionsRepository {
   async addPhotosToCollection(collectionId: number, photoIds: number[]): Promise<boolean> {
     await db.insert(collectionPhotosTable).values(photoIds.map(photoId => ({ collectionId, photoId })));
     return true;
+  }
+
+  async delete(collectionId: number) {
+    await db.delete(collectionsTable).where(eq(collectionsTable.id, collectionId));
   }
 }

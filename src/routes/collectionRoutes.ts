@@ -48,6 +48,23 @@ export function registerCollectionRoutes(server: FastifyInstance) {
         return collection;
     })
 
+    server.delete("/api/collections/:collectionId", async (req, res) => {
+        const { collectionId } = req.params as { collectionId: string };
+        const { id: userId } = req.user as User;
+
+        if (!collectionId) {
+            res.status(400);
+        }
+
+        const collection = await Collections.getById(parseInt(collectionId), userId);
+
+        if (!collection) {
+            res.status(404);
+        }
+
+        await Collections.delete(parseInt(collectionId));
+    })
+
     server.put("/api/collections/:collectionId/photos", async (req, res) => {
         const { collectionId } = req.params as { collectionId: string };
         const { photoIds } = req.body as { photoIds: number[] };
