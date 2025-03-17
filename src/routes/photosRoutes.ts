@@ -3,9 +3,8 @@ import PhotosRepository from "../database/repositories/PhotosRepository";
 import { storage } from "../firebase";
 import { MultipartValue } from "@fastify/multipart";
 import { uploadPhotoToGoogle } from "./googleRoutes";
-import { Photo, ProtoPhoto, User } from "@shared/types";
+import { Filters, Photo, ProtoPhoto, User } from "@shared/types";
 import sharp from "sharp";
-import { request } from "http";
 
 const Photos = new PhotosRepository();
 
@@ -113,10 +112,19 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   });
 
   server.post("/api/photos", async (req, res) => {
-    //this is where filtering is supposed ot happen
     const { id: userId } = req.user as User;
-    const photos = await Photos.findAllForUser(userId);
-    return photos;
+    let filters: Filters | null = null;
+    
+    if (!req.body) return res.status(400)
+    filters = req.body as Filters
+  
+    if (!filters) {
+      const photos = await Photos.findAllForUser(userId);
+      return res.send(photos);
+    }
+
+    const photos = await Photos.findWithFilters(filters, userId);
+    return res.send(photos);
   });
 
   server.put("/api/photos", async (req, res) => {
