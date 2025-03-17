@@ -1,11 +1,8 @@
-import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
-import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
 import IconButton from "@frontend/components/ui/IconButton";
-import Toolbar from "@frontend/components/ui/Toolbar";
 import api from "@frontend/utils/api";
 import { Photo } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Info, Pencil, Plus, Trash2 } from "lucide-react";
+import { Info, X, ZoomIn, ZoomOut } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -42,7 +39,9 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
   return (
     <>
       {overlayProps.overlayVisible && (
-        <div className={` absolute z-[20] h-full touch-none flex flex-col w-full pointer-events-none`}>
+        <div
+          className={` absolute z-[20] h-full touch-none flex flex-col w-full pointer-events-none`}
+        >
           <motion.div
             id="image-header"
             className="flex justify-between items-center text-black dark:text-white bg-white/90 dark:bg-onyx-light/80 shadow-lg p-4 pointer-events-auto"
@@ -60,20 +59,32 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
 
             <span className="gap-2">
               <IconButton
-                icon={<Info className="w-7 h-7" />}
+                icon={<ZoomIn className="w-6 h-6" />}
+                onClick={() => {
+                  overlayProps.onScale(2);
+                }}
+              />
+              <IconButton
+                icon={<ZoomOut className="w-6 h-6" />}
+                onClick={() => {
+                  overlayProps.onScale(-2);
+                }}
+              />
+
+              <IconButton
+                icon={<Info className="w-6 h-6" />}
                 onClick={() => setEditPanelOpen(!editPanelOpen)}
               />
-              <button onClick={overlayProps.onClose}>Close</button>
+              <IconButton
+                icon={<X className="w-6 h-6" />}
+                onClick={overlayProps.onClose}
+              />
             </span>
           </motion.div>
 
-
           <PhotoInfoPanel photo={photo} isOpen={editPanelOpen} />
-
         </div>
-        
       )}
-
     </>
   );
 }
