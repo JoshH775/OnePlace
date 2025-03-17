@@ -25,6 +25,23 @@ export function registerRoutes(
     return;
   });
 
+  server.setErrorHandler((error, request, reply) => {
+    console.error(error); // Log the error for debugging
+
+    // Check for custom error types or default to generic
+    if (error.validation) {
+      return reply.status(400).send({
+        error: "Validation error",
+        details: error.validation,
+      });
+    }
+
+    const statusCode = error.statusCode || 500;
+    reply.status(statusCode).send({
+      error: error.message || "Internal Server Error",
+    });
+  });
+
   registerGoogleRoutes(server);
   registerAuthRoutes(server, fastifyPassport);
   registerUserRoutes(server);
