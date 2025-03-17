@@ -160,7 +160,11 @@ async function parseFileMetadata(
     }
   }
 
-  const dateTaken = moment(tags['DateCreated'].value).format(TimestampFormat) || null
+  let date = null
+  const dateTaken = tags['DateCreated']
+  if (dateTaken) {
+    date = dateTaken.value
+  }
 
   const metadata: ProtoPhoto = {
     filename: file.name,
@@ -168,7 +172,7 @@ async function parseFileMetadata(
     alias: null,
     compressed: false,
     size: file.size,
-    date: dateTaken,
+    date: date,
     type: `image/${type}`,
   };
 
