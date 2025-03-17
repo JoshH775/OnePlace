@@ -3,7 +3,7 @@ import PhotosRepository from "../database/repositories/PhotosRepository";
 import { storage } from "../firebase";
 import { MultipartValue } from "@fastify/multipart";
 import { uploadPhotoToGoogle } from "./googleRoutes";
-import { ProtoPhoto, User } from "@shared/types";
+import { Filters, Photo, ProtoPhoto, User } from "@shared/types";
 import sharp from "sharp";
 
 const Photos = new PhotosRepository();
@@ -12,7 +12,10 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   server.get("/api/photos/:id", async (req, res) => {
     const { id: userId } = req.user as User;
     const { id } = req.params as { id: string };
-    const { thumbnail, download } = req.query as { thumbnail?: string, download?: string };
+    const { thumbnail, download } = req.query as {
+      thumbnail?: string;
+      download?: string;
+    };
     const photo = await Photos.findById(parseInt(id), userId);
 
     if (!photo) {
@@ -20,7 +23,10 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       return { error: "Photo not found" };
     }
 
-    const path = thumbnail === "true" ? `users/${userId}/thumbnails/${photo.filename}` : `users/${userId}/${photo.filename}`;
+    const path =
+      thumbnail === "true"
+        ? `users/${userId}/thumbnails/${photo.filename}`
+        : `users/${userId}/${photo.filename}`;
     const file = storage.bucket().file(path);
 
     if (download === "true") {
@@ -31,10 +37,9 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
     const [url] = await file.getSignedUrl({
       action: "read",
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-    })
+    });
 
     return res.redirect(url);
-    
   });
 
   server.post("/api/photos/upload", async (req, res) => {
@@ -90,8 +95,9 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         //Upload thumbnail
         const thumbnailPath = `users/${userId}/thumbnails/${metadata.filename}`;
         const thumbnailFile = storage.bucket().file(thumbnailPath);
-        await thumbnailFile.save(await sharp(buffer).resize(250, 250).toBuffer());
-
+        await thumbnailFile.save(
+          await sharp(buffer).resize(200, 200).webp().toBuffer()
+        );
       } catch (error) {
         console.error(`Error saving file: ${metadata.filename}: `, error);
         res.status(500);
@@ -106,28 +112,102 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
   });
 
   server.post("/api/photos", async (req, res) => {
-    //this is where filtering is supposed ot happen
     const { id: userId } = req.user as User;
-    const photos = await Photos.findAllForUser(userId);
-    return photos;
+    let filters: Filters | null = null;
+    
+    if (!req.body) return res.status(400)
+    filters = req.body as Filters
+  
+    if (!filters) {
+      const photos = await Photos.findAllForUser(userId);
+      return res.send(photos);
+    }
+
+    const photos = await Photos.findWithFilters(filters, userId);
+    return res.send(photos);
   });
+
+  server.put("/api/photos", async (req, res) => {
+    const { id: userId } = req.user as User;
+    const { photo: newPhoto } = req.body as { photo: Photo }
+
+    if (!newPhoto) return res.status(400)
+
+    const photo = await Photos.findById(newPhoto.id, userId)
+    if (!photo) return res.status(404)
+    
+    await Photos.update(newPhoto, userId)
+
+    res.status(201)
+    return { success: true }
+
+
+  })
+
+  server.post('/api/photos/bulk-delete', async (req, res) => {
+    const { ids } = req.body as { ids: number[] }
+    const { id:userId } = req.user as User
+
+    const deletePromises = ids.map(async (id) => {
+      const photo = await Photos.findById(id, userId)
+      if (!photo) return null
+      await deletePhotoFromFirebase(photo, userId)
+      await Photos.deletePhotoById(id)
+    })
+
+    await Promise.all(deletePromises)
+    res.send({ success: true });
+  })
 
   server.delete("/api/photos/delete-all", async (req, res) => {
     const { id } = req.user as User;
-    await Photos.deleteAllPhotos(); //delete from my db
+    await deleteUserPhotosFromFirebase(id);
+    await Photos.deleteAllForUser(id); //delete from my db
     res.send({ success: true });
-    await hardDeleteFromFirebase(id);
+  });
+  
+
+  server.delete("/api/photos/:id", async (req, res) => {
+    const { id: userId } = req.user as User;
+    const { id } = req.params as { id?: string };
+
+    if (!id) {
+      return res.status(400);
+    }
+
+    const photo = await Photos.findById(parseInt(id), userId);
+
+    if (!photo) {
+      return res.status(404);
+    }
+
+    deletePhotoFromFirebase(photo, userId);
+    await Photos.deletePhotoById(parseInt(id));
+    return { success: true };
   });
 }
 
-
-async function hardDeleteFromFirebase(userId: number) {
+async function deleteUserPhotosFromFirebase(userId: number) {
   const path = `users/${userId}`;
   const bucket = storage.bucket();
-  const [files] = await bucket.getFiles({ prefix: path, maxResults: 500, autoPaginate: true });
+  const [files] = await bucket.getFiles({
+    prefix: path,
+    maxResults: 500,
+    autoPaginate: true,
+  });
 
   const deletePromises = files.map((file) => file.delete());
   await Promise.all(deletePromises);
+}
 
-  
+async function deletePhotoFromFirebase(photo: Photo, userId: number) {
+  const path = `users/${userId}`;
+  const thumbnailPath = `users/${userId}/thumbnails`;
+  const bucket = storage.bucket();
+
+  const file = await bucket.file(`${path}/${photo.filename}`);
+  const thumbnail = await bucket.file(`${thumbnailPath}/${photo.filename}`);
+
+  file.delete();
+  thumbnail.delete();
 }

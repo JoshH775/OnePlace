@@ -1,5 +1,6 @@
-import { Collection, Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
+import { Collection, Filters, Photo, ProtoPhoto, SettingKeyType, UserData } from "@shared/types";
 import imageCompression, { Options } from 'browser-image-compression';
+import moment from "moment";
 
 
 type APIOptions = {
@@ -87,6 +88,11 @@ async function uploadPhotos(fileDataArray: { file: File, metadata: ProtoPhoto }[
     for (let i = 0; i < fileDataArray.length; i++) {
       const { file, metadata } = fileDataArray[i];
       const fileToUpload = compress ? await compressPhoto(file) : file;
+      
+      if (metadata.date) {
+        metadata.date = moment(metadata.date).format("YYYY-MM-DD HH:mm:ss")
+      }
+
       formData.append(`file_${i}`, fileToUpload);
       formData.append(`metadata_${i}`, JSON.stringify(metadata));
     }
@@ -111,7 +117,7 @@ async function uploadPhotos(fileDataArray: { file: File, metadata: ProtoPhoto }[
 }
 
 
-async function getPhotos(filters = {}): Promise<Photo[]> {
+async function getPhotos(filters: Filters = {}): Promise<Photo[]> {
   const { data } = await req("/photos", {
     method: "POST",
     body: filters,

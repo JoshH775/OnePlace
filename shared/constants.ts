@@ -17,4 +17,6 @@ export const DefaultUserSettings = {
     [UserSettingsKeys.COMPRESS_BEFORE_UPLOAD]: "true",
 } as const;
 
+export const TimestampFormat = "YYYY-MM-DD HH:mm:ss"
+
 export const CHUNK_SIZE = 45 * 1024 * 1024 // 45MB

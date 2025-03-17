@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { ProtoPhoto } from "@shared/types";
 import { useAuth } from "../AuthProvider";
 import _ from "lodash";
-import { CHUNK_SIZE } from "@shared/constants";
+import { CHUNK_SIZE, TimestampFormat } from "@shared/constants";
 
 type Props = {
   isOpen: boolean;
@@ -28,6 +28,8 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
       acceptedFiles: { file: File; metadata: ProtoPhoto }[];
       compress: boolean;
     }) => {
+
+      //Performing chunking before sending through api
       const totalSize = acceptedFiles.reduce(
         (acc, { file }) => acc + file.size,
         0
@@ -158,11 +160,10 @@ async function parseFileMetadata(
     }
   }
 
-  let date: string | Date | undefined = tags["DateTime"]?.description;
-  if (!date) {
-    date = moment(file.lastModified).toDate();
-  } else {
-    date = moment(date, "YYYY:MM:DD HH:mm:ss").toDate();
+  let date = null
+  const dateTaken = tags['DateCreated']
+  if (dateTaken) {
+    date = dateTaken.value
   }
 
   const metadata: ProtoPhoto = {

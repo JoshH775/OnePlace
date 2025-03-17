@@ -12,7 +12,7 @@ export default function IconButton({ icon, onClick, className, disabled = false 
     <Button
       onClick={onClick}
       disabled={disabled}
-      className={`flex rounded-full transition-colors duration-150 items-center gap-2 p-1 aspect-square text-onyx dark:text-white ${
+      className={`flex rounded-full transition-colors duration-150 items-center gap-2 p-1 aspect-square text-onyx dark:text-white cursor-pointer ${
         disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200 hover:dark:bg-onyx-light'
       } ${className}`}
     >

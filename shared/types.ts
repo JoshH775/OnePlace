@@ -35,11 +35,23 @@ export interface Photo {
   alias: string | null;
   type: string;
   location: string | null;
-  date: Date | null;
+  date: string | null;
   googleId: string | null;
-  createdAt: Date;
-  lastAccessed: Date;
+  createdAt: string;
+  lastAccessed: string;
   compressed: boolean;
+}
+
+export type Filters = {
+  collectionId?: number
+  dateRange?: { min: string, max: string}
+  uploadDateRange?: { min: string, max: string}
+}
+
+export interface UpdatablePhotoProperties {
+  location?: Photo['location']
+  date?: Photo['date']
+  alias?: Photo['alias']
 }
 
 export type ProtoPhoto = Omit<
@@ -69,9 +81,9 @@ export type Collection = {
   name: string;
   description: string | null;
   coverPhotoId: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  lastAccessed: Date;
+  createdAt: string;
+  updatedAt: string;
+  lastAccessed: string;
 }
 
 export type ProtoCollection = Omit<Collection, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'lastAccessed'>;

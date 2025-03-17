@@ -3,6 +3,7 @@ import IconButton from "./IconButton";
 import { AnimatePresence, motion } from "motion/react";
 import { ReactNode } from "react";
 import { X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export type ModalProps = {
   isOpen: boolean;
@@ -26,13 +27,13 @@ export default function Modal({
   title,
   icon,
 }: ModalProps) {
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <Dialog
           open
           onClose={onClose}
-          className="fixed inset-0 z-50 bg-black/50  w-full"
+          className="fixed inset-0 z-[3000] bg-black/50  w-full"
         >
           <motion.div
             id="motiondiv"
@@ -62,6 +63,7 @@ export default function Modal({
           </motion.div>
         </Dialog>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

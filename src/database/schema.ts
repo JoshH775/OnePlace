@@ -26,9 +26,9 @@ const photosTable = mysqlTable("photos", {
   size: int().notNull(),
   location: text(),
   googleId: varchar({ length: 255 }).unique(),
-  date: timestamp(),
-  createdAt: timestamp().defaultNow().notNull(),
-  lastAccessed: timestamp().defaultNow().notNull(),
+  date: timestamp({ mode: 'string'}),
+  createdAt: timestamp({ mode: 'string'}).defaultNow().notNull(),
+  lastAccessed: timestamp({ mode: 'string'}).defaultNow().notNull(),
   compressed: boolean().default(false).notNull(),
 });
 
@@ -41,8 +41,8 @@ const googleIntegrationsTable = mysqlTable("google_integrations", {
   googleId: varchar({ length: 255 }).notNull().unique(),
   accessToken: text().notNull(),
   refreshToken: text().notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp().defaultNow().notNull(),
+  createdAt: timestamp({ mode: 'string'}).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string'}).defaultNow().notNull(),
 });
 
 const userSettingsTable = mysqlTable(
@@ -65,18 +65,18 @@ const collectionsTable = mysqlTable("collections", {
   name: varchar({ length: 255 }).notNull(),
   description: text(),
   coverPhotoId: int()
-    .references(() => photosTable.id),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp().defaultNow().notNull(),
-  lastAccessed: timestamp().defaultNow().notNull(),
+    .references(() => photosTable.id, { onDelete: "set null"}),
+  createdAt: timestamp({ mode: 'string'}).defaultNow().notNull(),
+  updatedAt: timestamp({mode: 'string'}).defaultNow().notNull(),
+  lastAccessed: timestamp({mode: 'string'}).defaultNow().notNull(),
 });
 
 const collectionPhotosTable = mysqlTable("collection_photos", {
   collectionId: int()
-    .references(() => collectionsTable.id)
+    .references(() => collectionsTable.id, { onDelete: 'cascade', onUpdate: 'cascade'})
     .notNull(),
   photoId: int()
-    .references(() => photosTable.id)
+    .references(() => photosTable.id, { onDelete: "cascade", onUpdate: "cascade" })
     .notNull(),
 });
 

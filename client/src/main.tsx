@@ -12,6 +12,7 @@ import Spinner from "./components/ui/Spinner";
 import { AuthProvider } from "./components/AuthProvider";
 import Settings from "./pages/Settings/Settings";
 import Collections from "./pages/Collections/Collections";
+import CollectionView from "./pages/CollectionView";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/collections" element={<Collections />} />
             <Route path="/photos" element={<Photos />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/collections/:id" element={<CollectionView />} />
           </Route>
           <Route path="/login" element={<Login />} />
         </Routes>
