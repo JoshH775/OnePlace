@@ -44,7 +44,7 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
         >
           <motion.div
             id="image-header"
-            className="flex justify-between items-center text-black dark:text-white bg-white/90 dark:bg-onyx-light/80 shadow-lg p-4 pointer-events-auto"
+            className="flex justify-between items-center text-white bg-onyx-light/80 shadow-lg p-4 pointer-events-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
@@ -63,21 +63,28 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
                 onClick={() => {
                   overlayProps.onScale(2);
                 }}
+                className="text-white hover:bg-onyx-light"
               />
               <IconButton
                 icon={<ZoomOut className="w-6 h-6" />}
                 onClick={() => {
                   overlayProps.onScale(-2);
                 }}
+                className="text-white hover:bg-onyx-light"
+
               />
 
               <IconButton
                 icon={<Info className="w-6 h-6" />}
                 onClick={() => setEditPanelOpen(!editPanelOpen)}
+                className="text-white hover:bg-onyx-light"
+
               />
               <IconButton
                 icon={<X className="w-6 h-6" />}
                 onClick={overlayProps.onClose}
+                className="text-white hover:bg-onyx-light"
+
               />
             </span>
           </motion.div>

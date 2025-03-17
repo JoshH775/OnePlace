@@ -3,7 +3,6 @@ import { Suspense, useState } from "react";
 import IconButton from "../../components/ui/IconButton";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-import PhotoTile from "./PhotoTile";
 import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
@@ -15,9 +14,8 @@ import {
 import Toolbar from "@frontend/components/ui/Toolbar";
 import Header from "@frontend/components/Header";
 import Spinner from "@frontend/components/ui/Spinner";
-import { PhotoProvider } from "react-photo-view";
-import PhotoOverlay from "./PhotoOverlay";
 import toast from "react-hot-toast";
+import PhotoGallery from "@frontend/components/PhotoGallery";
 
 
 export default function Photos() {
@@ -151,24 +149,10 @@ export default function Photos() {
       </Header>
 
       <Suspense fallback={<Spinner />}>
-        <div id="photos" className="flex flex-wrap gap-2 w-full">
-          {data.length > 0 && <PhotoProvider
-            overlayRender={(props) => <PhotoOverlay overlayProps={props} photo={getOverlayPhoto(props.index, data)} />}
-            bannerVisible={false}
-          >
-          {data.map((photo) => {
-            return (
-              <PhotoTile
-                key={photo.id}
-                photo={photo}
-                selectMode={selectMode}
-                onClick={handleClick}
-              />
-            );
-          })}
-          </PhotoProvider>}
-          
-        </div>
+        <PhotoGallery
+          photos={data}
+          selectMode={selectMode}
+          handleClick={handleClick} />
       </Suspense>
 
 
@@ -194,9 +178,3 @@ export default function Photos() {
   );
 }
 
-function getOverlayPhoto(index: number, photos: Photo[]) {
-  if (photos.length === 0) return null;
-  if (index < 0) return photos[0];
-  if (index >= photos.length) return photos[photos.length - 1];
-  return photos[index];
-}

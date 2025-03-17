@@ -37,7 +37,7 @@ export default function PhotoTile(props: Props) {
     <div
       key={photo.id}
       onClick={handleClick}
-      className={`relative max-h-60 max-w-80 min-h-60 min-w-40 rounded-lg aspect-square cursor-pointer hover:scale-102 transform transition-all duration-200 ease-in-out ${
+      className={`relative max-h-60 max-w-80 min-h-60 min-w-40 shadow-xl dark:shadow-none rounded-lg aspect-square cursor-pointer hover:scale-102 transform transition-all duration-200 ease-in-out ${
         selectMode ? "scale-95 duration-200" : ""
       }`}
     >
