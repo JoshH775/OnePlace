@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { Authenticator } from "@fastify/passport";
 import { GoogleIntegrationRepository } from "../database/repositories/GoogleIntegrationRepository";
 import { User } from "@shared/types";
+import { asyncHandler } from "../index";
 
 const GoogleIntegrations = new GoogleIntegrationRepository();
 
@@ -9,22 +10,25 @@ export function registerAuthRoutes(server: FastifyInstance, fastifyPassport: Aut
   server.post(
     "/api/auth/login",
     { preValidation: fastifyPassport.authenticate("local") },
-    async (request, reply) => {
+    asyncHandler(async (request, reply) => {
       return { message: "Successfully logged in" };
-    }
+    })
   );
 
-  server.get("/api/auth/logout", async (request, reply) => {
-    request.logOut();
-    await request.session.destroy();
-    reply.clearCookie("sessionId", { path: "/" });
-    return { message: "Logged out" };
-  });
+  server.get(
+    "/api/auth/logout",
+    asyncHandler(async (request, reply) => {
+      request.logOut();
+      await request.session.destroy();
+      reply.clearCookie("sessionId", { path: "/" });
+      return { message: "Logged out" };
+    })
+  );
 
   server.get(
     "/api/auth/google",
     {
-      preValidation: async (request, reply) => {
+      preValidation: asyncHandler(async (request, reply) => {
         const user = request.user as User;
         if (!request.isAuthenticated()) {
           reply.redirect(
@@ -49,11 +53,11 @@ export function registerAuthRoutes(server: FastifyInstance, fastifyPassport: Aut
           ],
           accessType: "offline",
         })(request, reply);
-      },
+      }),
     },
-    async (request, reply) => {
+    asyncHandler(async (request, reply) => {
       return { message: "Redirecting to Google" };
-    }
+    })
   );
 
   server.get(
@@ -61,10 +65,9 @@ export function registerAuthRoutes(server: FastifyInstance, fastifyPassport: Aut
     {
       preValidation: fastifyPassport.authenticate("google", { session: false }),
     },
-    async (request, reply) => {
+    asyncHandler(async (request, reply) => {
       const redirectUrl = "http://localhost:3000/settings";
       reply.redirect(redirectUrl);
-    }
+    })
   );
-
 }
