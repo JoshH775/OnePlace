@@ -26,6 +26,7 @@ type APIResponse<T> = {
 // If the response is not successful, the error message will be in the error field
 // If the response is successful, the data will be in the data field
 // If the response is successful but the data is null, the data field will be null
+// The other functions work as abstractions for the req function
 
 async function req<T>(
   path: string,
@@ -47,7 +48,6 @@ async function req<T>(
 
   try {
     const response = await fetch(`/api${path}`, fetchOptions);
-
     let data = null;
 
     try {
@@ -57,7 +57,6 @@ async function req<T>(
     }
 
     if (!response.ok) {
-      // Check if the error message is returned from the server
       const errorMessage = data?.error || response.statusText;
       return {
         status: response.status,
@@ -71,7 +70,6 @@ async function req<T>(
       data,
     };
   } catch (error) {
-    //Error in the making of the request
     console.error("Error in req function:", error);
 
     if (options.throwError) {
@@ -86,188 +84,262 @@ async function req<T>(
   }
 }
 
-async function getUser(): Promise<UserData | null> {
-  const { data: userData, error } = await req<UserData>("/user");
+const userAPI = {
+  async getUser(): Promise<UserData | null> {
+    const { data: userData, error } = await req<UserData>("/user");
 
-  if (error || !userData) {
-    console.error("Error getting user:", error);
-    return null;
-  }
-
-  const user: UserData = {
-    id: userData.id,
-    email: userData.email,
-    integrations: userData.integrations,
-    createdAt: userData.createdAt,
-    settings: userData.settings,
-  };
-
-  return user;
-}
-
-async function login(
-  email: string,
-  password: string
-): Promise<{ success: boolean; error?: string }> {
-  const { status, error } = await req("/auth/login", {
-    method: "POST",
-    body: { email, password },
-  });
-
-  if (error || !statusIsOk(status)) {
-    console.error("Error logging in:", error);
-    return { success: false, error: error || "Unknown error" };
-  }
-
-  return { success: true };
-}
-
-async function disconnectIntegration(
-  provider: string
-): Promise<{ success: boolean; error?: string }> {
-  const { status, error } = await req(`/auth/disconnect/${provider}`, {
-    method: "DELETE",
-  });
-
-  if (error || !statusIsOk(status)) {
-    console.error("Error disconnecting integration:", error);
-    return { success: false, error: error || "Unknown error" };
-  }
-
-  return { success: true };
-}
-
-async function uploadPhotos(
-  fileDataArray: { file: File; metadata: ProtoPhoto }[],
-  compress: boolean = true
-) {
-  try {
-    const formData = new FormData();
-
-    for (let i = 0; i < fileDataArray.length; i++) {
-      const { file, metadata } = fileDataArray[i];
-      const fileToUpload = compress ? await compressPhoto(file) : file;
-
-      if (metadata.date) {
-        metadata.date = moment(metadata.date).format("YYYY-MM-DD HH:mm:ss");
-      }
-
-      formData.append(`file_${i}`, fileToUpload);
-      formData.append(`metadata_${i}`, JSON.stringify(metadata));
+    if (error || !userData) {
+      console.error("Error getting user:", error);
+      return null;
     }
 
-    console.log("Uploading photos:", formData);
-
-    const response = await fetch("/api/photos/upload", {
+    return userData;
+  },
+  async updateSetting(setting: {
+    key: SettingKeyType;
+    value: string;
+  }): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await req("/user/settings", {
       method: "POST",
-      body: formData,
-      credentials: "include",
+      body: setting,
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to upload photos. Check response." + response);
+    if (error || !data) {
+      console.error("Error updating setting:", error);
+      return { success: false, error: error || "Unknown error" };
     }
-    return true;
-  } catch (error) {
-    console.error("Error during photo upload:", error);
-    throw error;
+
+    return { success: true };
+  },
+};
+
+const authAPI = {
+  async login(
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req("/auth/login", {
+      method: "POST",
+      body: { email, password },
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error logging in:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  },
+
+  async disconnectIntegration(
+    provider: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/auth/disconnect/${provider}`, {
+      method: "DELETE",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error disconnecting integration:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  },
+};
+
+const photosAPI = {
+  async uploadPhotos(
+    fileDataArray: { file: File; metadata: ProtoPhoto }[],
+    compress: boolean = true
+  ) {
+    try {
+      const formData = new FormData();
+
+      for (let i = 0; i < fileDataArray.length; i++) {
+        const { file, metadata } = fileDataArray[i];
+        const fileToUpload = compress ? await compressPhoto(file) : file;
+
+        if (metadata.date) {
+          metadata.date = moment(metadata.date).format("YYYY-MM-DD HH:mm:ss");
+        }
+
+        formData.append(`file_${i}`, fileToUpload);
+        formData.append(`metadata_${i}`, JSON.stringify(metadata));
+      }
+
+      const response = await fetch("/api/photos/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload photos. Check response." + response);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error during photo upload:", error);
+      throw error;
+    }
+  },
+
+  async getPhotos(filters: Filters = {}): Promise<Photo[]> {
+    const { data, error } = await req<Photo[]>("/photos", {
+      method: "POST",
+      body: filters,
+    });
+
+    if (error || !data) {
+      console.error("Error getting photos:", error);
+      return [];
+    }
+
+    return data;
+  },
+
+  async updatePhoto(photo: Photo): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req("/photos", {
+      method: "PUT",
+      body: { photo },
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error updating photo:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  },
+
+  async deletePhoto(photoId: number): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/photos/${photoId}`, {
+      method: "DELETE",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error deleting photo:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+},
+
+  async bulkDeletePhotos(photoIds: number[]): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req("/photos/bulk-delete", {
+      method: "POST",
+      body: { ids: photoIds },
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error bulk deleting photos:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
   }
+
 }
 
-async function getPhotos(filters: Filters = {}): Promise<Photo[]> {
-  const { data, error } = await req<Photo[]>("/photos", {
-    method: "POST",
-    body: filters,
-  });
+const collectionsAPI = {
+  async getCollections(query?: string): Promise<Collection[]> {
+    const queryString = query ? `?query=${query}` : "";
+    const { data, error } = await req<Collection[]>(
+      `/collections${queryString}`
+    );
 
-  if (error || !data) {
-    console.error("Error getting photos:", error);
-    return [];
-  }
+    if (error || !data) {
+      console.error("Error getting collections:", error);
+      return [];
+    }
 
-  return data;
-}
+    return data;
+  },
 
-async function updateSetting(setting: {
-  key: SettingKeyType;
-  value: string;
-}): Promise<{ success: boolean; error?: string }> {
-  const { data, error } = await req("/user/settings", {
-    method: "POST",
-    body: setting,
-  });
+  async getCollectionById(collectionId: number): Promise<Collection | null> {
+    const { data, error } = await req<Collection>(`/collections/${collectionId}`);
 
-  if (error || !data) {
-    console.error("Error updating setting:", error);
-    return { success: false, error: error || "Unknown error" };
-  }
+    if (error || !data) {
+      console.error("Error getting collection by ID:", error);
+      return null;
+    }
 
-  return { success: true };
-}
+    return data
+  },
 
-async function getCollections(query?: string): Promise<Collection[] | null> {
-  const queryString = query ? `?query=${query}` : "";
-  const { data, error } = await req<Collection[]>(`/collections${queryString}`);
+  async getPhotosForCollection(collectionId: number): Promise<Photo[]> {
+    const { data, error } = await req<Photo[]>(
+      `/collections/${collectionId}/photos`
+    );
 
-  if (error || !data) {
-    console.error("Error getting collections:", error);
-    return null;
-  }
+    if (error || !data) {
+      console.error("Error getting photos for collection:", error);
+      return [];
+    }
 
-  return data;
-}
+    return data;
+  },
 
-async function createCollection(collection: {
-  name: string;
-  description: string;
-}): Promise<Collection | null> {
-  const { data, error } = await req<Collection>("/collections", {
-    method: "POST",
-    body: collection,
-  });
+  async createCollection(collection: {
+    name: string;
+    description: string;
+  }): Promise<Collection | null> {
+    const { data, error } = await req<Collection>("/collections", {
+      method: "POST",
+      body: collection,
+    });
 
-  if (error || !data) {
-    console.error("Error creating collection:", error);
-    return null;
-  }
+    if (error || !data) {
+      console.error("Error creating collection:", error);
+      return null;
+    }
 
-  return data;
-}
+    return data;
+  },
 
-async function addPhotosToCollection(
-  collectionId: string,
-  photoIds: number[]
-): Promise<{ success: boolean; error?: string }> {
-  const { data, error } = await req(`/collections/${collectionId}/photos`, {
-    method: "PUT",
-    body: { photoIds },
-    throwError: true,
-  });
+  async addPhotosToCollection(
+    collectionId: string,
+    photoIds: number[]
+  ): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await req(`/collections/${collectionId}/photos`, {
+      method: "PUT",
+      body: { photoIds },
+      throwError: true,
+    });
 
-  if (error || !data) {
-    console.error("Error adding photos to collection:", error);
-    return { success: false, error: error || "Unknown error" };
-  }
+    if (error || !data) {
+      console.error("Error adding photos to collection:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
 
-  return { success: true };
-}
+    return { success: true };
+  },
+
+  async deleteCollection(
+    collectionId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/collections/${collectionId}`, {
+      method: "DELETE",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error deleting collection:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  },
+};
 
 const api = {
+  user: userAPI,
+  auth: authAPI,
+  photos: photosAPI,
+  collections: collectionsAPI,
   req,
-  getUser,
-  disconnectIntegration,
-  getPhotos,
-  login,
-  uploadPhotos,
-  updateSetting,
-  getCollections,
-  createCollection,
-  addPhotosToCollection,
 };
 
 export default api;
-
-//local functions
 
 function statusIsOk(status: number): boolean {
   return status >= 200 && status < 300;
