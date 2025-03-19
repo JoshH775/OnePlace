@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { data: user, isLoading } = useSuspenseQuery({
     queryKey: ["user"],
-    queryFn: api.getUser,
+    queryFn: api.user.getUser,
     refetchOnWindowFocus: false,
   });
 
@@ -36,9 +36,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const success = await api.login(email, password)
+    const { success } = await api.auth.login(email, password)
     if (success) {
-      const user = await api.getUser()
+      const user = await api.user.getUser()
       queryClient.setQueryData(["user"], user)
     }
     return success

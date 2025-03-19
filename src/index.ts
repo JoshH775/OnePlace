@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { FastifyReply, FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import fastifySession from "@fastify/session";
 import fastifyCookie from "@fastify/cookie";
@@ -66,3 +66,14 @@ server.listen({ port: 8000, host: "0.0.0.0" }, (err: any, address: any) => {
 
   console.log(`Server listening at ${address}`);
 });
+
+export function asyncHandler(fn: (req: FastifyRequest, res: FastifyReply) => any) {
+  return async (req: FastifyRequest, res: FastifyReply) => {
+    try {
+      return await fn(req, res); // Return the result of the function
+    } catch (err) {
+      req.server.log.error(err);
+      res.send(err); // Send the error to the client
+    }
+  };
+}

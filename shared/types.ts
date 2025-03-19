@@ -3,8 +3,8 @@ import { GlobalSettingsKeys, UserSettingsKeys } from "./constants";
 export type User = {
   id: number;
   email: string;
-password: string;
-createdAt: Date;
+  password: string;
+  createdAt: string;
 };
 
 export type UserData = Omit<User, 'password'> & {
@@ -20,8 +20,8 @@ export type GoogleIntegration = {
   googleId: string;
   accessToken: string;
   refreshToken: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type GoogleClientIntegration = Omit<GoogleIntegration, 'accessToken' | 'refreshToken' | 'userId'>;

@@ -19,10 +19,27 @@ export function registerRoutes(
 
   server.addHook("preHandler", async (request, reply) => {
     if (!request.isAuthenticated()) {
-      return reply.code(401).send({ message: "Not logged in" });
+      return reply.status(401).send({ error: "Unauthorized" });
     }
 
     return;
+  });
+
+  server.setErrorHandler((error, request, reply) => {
+    console.error(error); // Log the error for debugging
+
+    // Check for custom error types or default to generic
+    if (error.validation) {
+      return reply.status(400).send({
+        error: "Validation error",
+        details: error.validation,
+      });
+    }
+
+    const statusCode = error.statusCode || 500;
+    reply.status(statusCode).send({
+      error: "Internal Server Error",
+    });
   });
 
   registerGoogleRoutes(server);

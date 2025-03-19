@@ -9,12 +9,12 @@ export default class CollectionsRepository {
     name: string;
     userId: number;
     description?: string;
-  }): Promise<Collection | null> {
+  }): Promise<Collection> {
     await db.insert(collectionsTable).values(options);
     const collection = await db.query.collectionsTable.findFirst({
       where: (collection, { and, eq }) => and(eq(collection.name, options.name), eq(collection.userId, options.userId)),
     });
-    return collection ?? null;
+    return collection!;
   }
 
   async getCollectionsForUser(userId: number, query: string | undefined): Promise<Collection[] | null> {

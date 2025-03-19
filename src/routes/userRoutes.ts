@@ -20,15 +20,9 @@ export function registerUserRoutes(server: FastifyInstance) {
   });
 
   server.post("/api/user/settings", async (request, reply) => {
-    try {
       const user = request.user as User;
       const { key, value } = request.body as { key: UserSettingsKeysType; value: string };
       await Settings.setUserSetting(user.id, key, value);
-      return { success: true };
-    } catch (error) {
-      console.error(error);
-      reply.status(500);
-      return { success: false };
-  }
+      return reply.status(204)
 })
 }

@@ -3,7 +3,6 @@ import PhotoGallery from "@frontend/components/PhotoGallery";
 import Button from "@frontend/components/ui/Button";
 import Spinner from "@frontend/components/ui/Spinner";
 import api from "@frontend/utils/api";
-import { Collection } from "@shared/types";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { Suspense, useState } from "react";
@@ -24,51 +23,44 @@ export default function CollectionView() {
   const { data, isError } = useSuspenseQuery({
     queryKey: ["collection", id],
     queryFn: async () => {
-      const response = await api.req(`/collections/${id}`);
-      if (response.status !== 200 || !response.data) return null
+      const collection = await api.collections.getCollectionById(parseInt(id!));
+      const photos = await api.collections.getPhotosForCollection(parseInt(id!));
 
-      const collection = response.data as Collection;
-
-      const photos = await api.getPhotos({ collectionId: parseInt(id!) });
       return { collection, photos };
-    },
+    }
   });
 
   const { mutateAsync: deleteMutation } = useMutation({
-    mutationFn: async () => {
-        toast.loading('Deleting collection...')
-        const { status } = await api.req(`/collections/${id}`, { method: "DELETE" });
-        console.log(status, 'status')
-        if (status !== 200) {
-            toast.error('Error deleting collection')
-            throw new Error("Error deleting collection");
-        }
-        else {
-            console.log('returning status')
-            return status
-        }
+    mutationFn: async () => api.collections.deleteCollection(id!)
+  });
 
-    },
-    onSuccess: () => {
-            console.log('RJARJAJRAJRJARJA')
-            queryClient.invalidateQueries({ queryKey: ["collections"] });
-            toast.success("Collection deleted!");
-            navigate("/collections");
-    }})
+  const deleteCollection = async () => {
+    toast.loading("Deleting collection...");
+    const { success, error } = await deleteMutation();
 
+    if (!success || error) {
+      toast.error("Error deleting collection");
+      return;
+    }
+
+    toast.dismiss();
+    toast.success("Collection deleted");
+    queryClient.invalidateQueries({ queryKey: ["collections"] });
+    navigate("/collections");
+  }
     
     
 
 
   return (
     <Suspense fallback={<Spinner />}>
-      {isError || !data ? (
+      {isError || !data.collection ? (
         <div className="flex-grow flex justify-center items-center font-bold text-3xl w-full">
           Collection not found!
         </div>
       ) : (
         <div className="w-full flex-grow flex flex-col p-5">
-        <ConfirmationModal isOpen={confirmModalOpen} onClose={() => setConfirmModalOpen(false)} onConfirm={deleteMutation} />
+        <ConfirmationModal isOpen={confirmModalOpen} onClose={() => setConfirmModalOpen(false)} onConfirm={deleteCollection} />
 
             <span className="justify-between w-full">
             <p className="text-3xl font-bold indigo-underline mb-3">

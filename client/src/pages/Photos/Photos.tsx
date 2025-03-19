@@ -33,28 +33,14 @@ export default function Photos() {
   const filters = {};
   const { data } = useSuspenseQuery({
     queryKey: ["photos", filters],
-    queryFn: () => api.getPhotos(filters),
+    queryFn: () => api.photos.getPhotos(filters),
   });
 
-  const { mutate: bulkDelete } = useMutation({
-    mutationFn: async (photoIds: number[]) => {
-      setLoading(true);
-      toast.loading("Deleting photos...");
-      await api.req("/photos/bulk-delete", {
-        method: "POST",
-        body: { ids: photoIds },
-      })
-    },
-    onSuccess: () => {
-      toast.dismiss()
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
-      toast.success("Photos deleted!");
-      setLoading(false);
-    }
+  const { mutateAsync: bulkDeleteMutation } = useMutation({
+    mutationFn: async (photoIds: number[]) => api.photos.bulkDeletePhotos(photoIds),
   })
 
   const handleClick = (photo: Photo) => {
-    if (selectMode) {
       const index = selectedPhotos.findIndex((p) => p.id === photo.id);
       if (index === -1) {
         setSelectedPhotos((prevState) => [...prevState, photo]);
@@ -63,11 +49,6 @@ export default function Photos() {
           prevState.filter((p) => p.id !== photo.id)
         );
       }
-    } else {
-      console.log("Opening photo viewer");
-
-      // setPhotoViewerOpen(true);
-    }
   };
 
   const downloadSelected = async () => {
@@ -106,6 +87,19 @@ export default function Photos() {
     //   setLoading(false);
     // }
   };
+
+  const bulkDelete = async (photoIds: number[]) => {
+    setLoading(true)
+    toast.loading("Deleting photos...")
+    const { success, error } = await bulkDeleteMutation(photoIds)
+    if (!success || error) {
+      toast.error(error || "Failed to delete photos")
+    } else {
+      toast.success("Photos deleted successfully")
+      setSelectedPhotos([])
+      queryClient.invalidateQueries({ queryKey: ["photos"] })
+    }
+  }
 
   return (
     <div className="w-full flex flex-col !justify-start p-5 gap-3 relative">

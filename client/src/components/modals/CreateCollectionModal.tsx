@@ -15,28 +15,26 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
 
   const queryClient = useQueryClient()
     const { mutateAsync } = useMutation({
-      mutationFn: async (data: { name: string; description: string }) => api.createCollection(data),
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["collections"] })        
-      }
+      mutationFn: async (data: { name: string; description: string }) => api.collections.createCollection(data),
     })
   
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
+      toast.loading("Creating collection...")
+
       const name = (e.currentTarget.elements.namedItem("name") as HTMLInputElement).value
       const description = (e.currentTarget.elements.namedItem("description") as HTMLInputElement).value
   
-      const promise = mutateAsync({ name, description })
+      const collection = await mutateAsync({ name, description })
 
-      toast.promise(
-        promise,
-        {
-          loading: "Creating collection...",
-          success: "Collection created!",
-          error: "Failed to create collection",
-        }
-      )
-  
+      if (!collection) {
+        toast.dismiss()
+        toast.error("Error creating collection")
+        return
+      }
+
+      toast.success("Collection created")
+      queryClient.invalidateQueries({ queryKey: ["collections"] })
       onClose()
     }
   

@@ -30,7 +30,7 @@ export default function Collections() {
 
   const { data: collections, isLoading } = useQuery({
     queryKey: ["collections", query],
-    queryFn: () => api.getCollections(query),
+    queryFn: () => api.collections.getCollections(query),
     refetchOnWindowFocus: false,
   });
 
@@ -61,10 +61,7 @@ export default function Collections() {
         </Button>
   </Header> 
 
-      {!isLoading && (!collections || collections.length === 0) && (
-        <NoCollections />
-      )}
-
+    
 {isLoading ? (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
     {Array.from({ length: 4 }).map((_, idx) => (

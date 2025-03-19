@@ -4,12 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import api from "../../utils/api";
 import ExifReader from "exifreader";
-import moment from "moment";
 import toast from "react-hot-toast";
 import { ProtoPhoto } from "@shared/types";
 import { useAuth } from "../AuthProvider";
 import _ from "lodash";
-import { CHUNK_SIZE, TimestampFormat } from "@shared/constants";
+import { CHUNK_SIZE } from "@shared/constants";
 
 type Props = {
   isOpen: boolean;
@@ -42,24 +41,22 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
         );
 
         const results = await Promise.allSettled(
-          chunks.map((chunk) => api.uploadPhotos(chunk, compress))
+          chunks.map((chunk) => api.photos.uploadPhotos(chunk, compress))
         );
         const allSuccess = results.every(
           (result) => result.status === "fulfilled"
         );
         return allSuccess;
       } else {
-        return api.uploadPhotos(acceptedFiles, compress);
+        return api.photos.uploadPhotos(acceptedFiles, compress);
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
-      onClose();
-    },
+    }
   });
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
+      toast.loading("Preparing photos for upload...");
+
       const failedFiles = [];
       const filesWithMetadata: { file: File; metadata: ProtoPhoto }[] = [];
 
@@ -85,17 +82,22 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
         return;
       }
 
-      const upload = mutateAsync({
+      toast.dismiss();
+      toast.loading("Uploading photos ...");
+      const success = await mutateAsync({
         acceptedFiles: filesWithMetadata,
-        compress,
-      });
-      toast.promise(upload, {
-        loading: "Uploading photos...",
-        success: "Photos uploaded successfully!",
-        error: "Failed to upload photos",
-      });
-    },
-    [mutateAsync, compress]
+        compress, });
+
+      if (success) {
+        toast.dismiss();
+        toast.success("Photos uploaded successfully");
+        queryClient.invalidateQueries({ queryKey: ["photos"] });
+        onClose();
+      } 
+    }
+    ,
+      
+    [mutateAsync, compress, queryClient, onClose]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
