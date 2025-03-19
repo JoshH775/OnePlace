@@ -21,22 +21,25 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
 
   const queryClient = useQueryClient();
 
-  const { mutate: deletePhoto } = useMutation({
-    mutationFn: async () => {
-      toast.loading("Deleting photo...");
-      await api.req(`/photos/${photo!.id}`, {
-        method: "DELETE",
-      });
-    },
-    onSuccess: () => {
-      console.log("onSuccesss");
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
-      toast.dismiss();
-      toast.success("Photo deleted!");
-    },
-  });
+  const { mutateAsync } = useMutation({
+    mutationFn: async () => api.photos.deletePhoto(photo!.id),
+  })
 
   if (!photo) return null;
+
+  const deletePhoto = async () => {
+    toast.loading("Deleting photo...");
+    const { success, error } = await mutateAsync();
+
+    if (!success || error) {
+      toast.error("Error deleting photo");
+      return;
+    }
+
+    toast.dismiss();
+    toast.success("Photo deleted");
+    queryClient.invalidateQueries({ queryKey: ["photos"] });
+  }
 
   return (
     <>

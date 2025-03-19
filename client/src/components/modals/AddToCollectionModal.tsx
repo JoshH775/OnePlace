@@ -28,13 +28,13 @@ export default function AddToCollectionModal({
 
   const { data: collections, isLoading } = useQuery({
     queryKey: ["collections"],
-    queryFn: () => api.getCollections(),
+    queryFn: () => api.collections.getCollections(),
     enabled: isOpen,
   });
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (photoIds: number[]) =>
-      api.addPhotosToCollection(selectedCollection!.id.toString(), photoIds),
+      api.collections.addPhotosToCollection(selectedCollection!.id.toString(), photoIds),
   })
 
   const filteredCollections =
@@ -46,21 +46,22 @@ export default function AddToCollectionModal({
     }) || [];
 
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    toast.loading("Adding to collection...");
     if (!selectedCollection) {
       toast.error("Please select a collection");
       return;
     }
 
     const photoIds = photos.map((photo) => photo.id);
-    const promise = mutateAsync(photoIds);
+    const { success, error } = await mutateAsync(photoIds);
 
-    toast.promise(promise, {
-      loading: "Adding photos to collection...",
-      success: "Photos added to collection",
-      error: "Failed to add photos to collection",
-    });
+    if (!success || error) {
+      toast.error(error || "Failed to add photos to collection");
+    } else {
+      toast.success("Photos added to collection");
+    }
 
     onClose();
 

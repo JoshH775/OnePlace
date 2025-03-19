@@ -18,25 +18,27 @@ export default function Settings() {
   const settings = user.settings;
   const integrations = user.integrations;
 
-  const { mutate: disconnectIntegration, isPending } = useMutation({
-    mutationFn: (integration: string) => api.disconnectIntegration(integration),
-    onSuccess: () => {
-      const updatedUser = user
-      delete updatedUser.integrations['google']
-      updateUser(updatedUser)
+  const { mutate: disconnectIntegrationMutation, isPending } = useMutation({
+    mutationFn: (integration: string) => api.auth.disconnectIntegration(integration),
+  });
+
+  const { mutate: updateSettingMutation, isPending: isPendingSetting } = useMutation({
+    mutationFn: (setting: { key: SettingKeyType; value: string }) => {
+      return api.user.updateSetting(setting);
     },
   });
 
-  const { mutate: updateSetting, isPending: isPendingSetting } = useMutation({
-    mutationFn: (setting: { key: SettingKeyType; value: string }) => {
-      return api.updateSetting(setting);
-    },
-    onSuccess: (data) => {
-      const updatedUser = user
-      updatedUser.settings[data.key] = data.value
-      updateUser(updatedUser)
-    },
-  });
+  const updateSetting = async (setting: { key: SettingKeyType; value: string }) => {
+    await updateSettingMutation(setting);
+    updateUser({ ...user, settings: { ...settings, [setting.key]: setting.value } });
+  }
+
+  const disconnectIntegration = async (integration: string) => {
+    await disconnectIntegrationMutation(integration);
+    const updatedIntegrations = { ...integrations };
+    delete updatedIntegrations[integration];
+    updateUser({ ...user, integrations: updatedIntegrations });
+  };
 
   interface ModalState {
     action: () => void;

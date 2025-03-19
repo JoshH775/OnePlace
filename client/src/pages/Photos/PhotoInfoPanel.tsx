@@ -84,24 +84,9 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
   const queryClient = useQueryClient();
 
   const { mutateAsync } = useMutation({
-    mutationFn: async (photo: Photo) => {
-      const { status } = await api.req("/photos", {
-        method: "PUT",
-        body: { photo },
-      });
+    mutationFn: async (photo: Photo) => api.photos.updatePhoto(photo) })
 
-      if (status !== 201) {
-        throw Error("Photo update failed");
-      }
-
-      return photo;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["photos"] });
-    },
-  });
-
-  const savePhoto = () => {
+  const savePhoto = async () => {
     setEditMode(false);
     const elements = Array.from(
       document.querySelectorAll<HTMLInputElement>(".field-input")
@@ -110,7 +95,6 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
     const labelMap: Record<string, keyof UpdatablePhotoProperties> = {
       "Date Taken": "date",
       Location: "location",
-      filename: "filename",
     };
 
     const values: Record<string, string> = {};
@@ -136,11 +120,15 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
       return;
     }
 
-    toast.promise(mutateAsync(updatedPhoto), {
-      success: "Photo successfully updated!",
-      loading: "Updating Photo...",
-      error: "Update failed!",
-    });
+    const { success, error } = await mutateAsync(updatedPhoto);
+    
+    if (!success || error) {
+      toast.error("Error updating photo");
+    } else {
+      toast.success("Photo updated");
+      queryClient.invalidateQueries({ queryKey: ["photos"] });
+    }
+
   };
 
   return (
