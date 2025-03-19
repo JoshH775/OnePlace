@@ -14,7 +14,7 @@ export const DefaultUserSettings = {
     [UserSettingsKeys.GOOGLE_AUTO_UPLOAD]: "false",
     [UserSettingsKeys.DROPBOX_AUTO_UPLOAD]: "false", 
     [UserSettingsKeys.UPLOAD_MAX_QUALITY]: "true",
-    [UserSettingsKeys.COMPRESS_BEFORE_UPLOAD]: "true",
+    [UserSettingsKeys.COMPRESS_BEFORE_UPLOAD]: "false",
 } as const;
 
 export const TimestampFormat = "YYYY-MM-DD HH:mm:ss"
