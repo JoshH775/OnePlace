@@ -19,7 +19,7 @@ export function registerRoutes(
 
   server.addHook("preHandler", async (request, reply) => {
     if (!request.isAuthenticated()) {
-      return reply.code(401).send({ message: "Not logged in" });
+      return reply.status(401).send({ error: "Unauthorized" });
     }
 
     return;
@@ -38,7 +38,7 @@ export function registerRoutes(
 
     const statusCode = error.statusCode || 500;
     reply.status(statusCode).send({
-      error: error.message || "Internal Server Error",
+      error: "Internal Server Error",
     });
   });
 
