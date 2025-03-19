@@ -2,8 +2,10 @@ import CollectionsRepository from "@backend/database/repositories/CollectionsRep
 import { User } from "@shared/types"
 import { FastifyInstance } from "fastify"
 import { asyncHandler } from ".."
+import PhotosRepository from "@backend/database/repositories/PhotosRepository"
 
 const Collections = new CollectionsRepository()
+const Photos = new PhotosRepository()
 
 export function registerCollectionRoutes(server: FastifyInstance) {
   server.post(
@@ -50,7 +52,7 @@ export function registerCollectionRoutes(server: FastifyInstance) {
 
       if (!collection) {
         res.status(404)
-        return { success: false, message: "Collection not found" }
+        return { error: "Collection not found" }
       }
 
       return collection
@@ -72,11 +74,11 @@ export function registerCollectionRoutes(server: FastifyInstance) {
 
       if (!collection) {
         res.status(404)
-        return { success: false, message: "Collection not found" }
+        return { error: "Collection not found" }
       }
 
       await Collections.delete(parseInt(collectionId))
-      return { success: true }
+      return res.status(204).send()
     })
   )
 
@@ -111,4 +113,26 @@ export function registerCollectionRoutes(server: FastifyInstance) {
       return { success: true }
     })
   )
-}
+
+  server.get(
+    "/api/collections/:collectionId/photos", asyncHandler(async (req, res) => {
+    const { collectionId } = req.params as { collectionId?: string }
+    const { id: userId } = req.user as User
+
+    if (!collectionId) {
+      res.status(400)
+      return { error: "Collection ID is required" }
+    }
+
+    const collection = await Collections.getById(parseInt(collectionId), userId)
+
+    if (!collection) {
+      res.status(404)
+      return { error: "Collection not found" }
+    }
+
+    const photos = await Photos.findWithFilters({ collectionId: parseInt(collectionId) }, userId)
+    return photos
+  
+  })
+)}
