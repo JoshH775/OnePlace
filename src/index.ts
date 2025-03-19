@@ -70,7 +70,7 @@ server.listen({ port: 8000, host: "0.0.0.0" }, (err: any, address: any) => {
 export function asyncHandler(fn: (req: FastifyRequest, res: FastifyReply) => any) {
   return async (req: FastifyRequest, res: FastifyReply) => {
     try {
-      await fn(req, res);
+      return await fn(req, res); // Return the result of the function
     } catch (err) {
       req.server.log.error(err);
       res.send(err); // Send the error to the client
