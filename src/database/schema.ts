@@ -5,6 +5,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -86,6 +87,27 @@ const globalSettingsTable = mysqlTable("global_settings", {
   value: text().notNull(),
 });
 
+const tagsTable = mysqlTable("tags", {
+  id: int().autoincrement().primaryKey(),
+  userId: int().notNull()
+    .references(() => usersTable.id),
+  color: varchar({ length: 255 }),
+  name: varchar({ length: 255 }).notNull().unique(),
+},
+(table) => [
+  unique().on(table.userId, table.name),
+]);
+
+const photoTagsTable = mysqlTable("photo_tags", {
+  photoId: int()
+    .references(() => photosTable.id, { onDelete: 'cascade', onUpdate: 'cascade'})
+    .notNull(),
+  tagId: int()
+    .references(() => tagsTable.id, { onDelete: 'cascade', onUpdate: 'cascade'})
+    .notNull(),
+}, (table) => [primaryKey({ columns: [table.photoId, table.tagId] })]);
+
+
 
 export {
   usersTable,
@@ -95,4 +117,6 @@ export {
   globalSettingsTable,
   collectionsTable,
   collectionPhotosTable,
+  tagsTable,
+  photoTagsTable,
 };
