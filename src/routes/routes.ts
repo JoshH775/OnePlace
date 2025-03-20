@@ -26,7 +26,7 @@ export function registerRoutes(
   });
 
   server.setErrorHandler((error, request, reply) => {
-    console.error(error); // Log the error for debugging
+    console.log(error); // Log the error for debugging
 
     // Check for custom error types or default to generic
     if (error.validation) {
