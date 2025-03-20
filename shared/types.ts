@@ -10,6 +10,7 @@ export type User = {
 export type UserData = Omit<User, 'password'> & {
   integrations: Record<string, GoogleClientIntegration>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
   settings: SettingsObject;
+  tags: Tag[];
 };
 
 
@@ -40,6 +41,12 @@ export interface Photo {
   createdAt: string;
   lastAccessed: string;
   compressed: boolean;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  color: string | null;
 }
 
 export type Filters = {
