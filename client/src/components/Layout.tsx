@@ -67,7 +67,7 @@ export default function Layout() {
               OnePlace
             </RouterLink>
 
-            <hr className="!border-onyx-light !mt-0"/>
+            <hr className="!border-onyx-light !mt-0 mb-4"/>
 
           <div className="gap-2 flex flex-col px-3" id="nav-links">
           
@@ -89,7 +89,7 @@ export default function Layout() {
             />
           </div>
 
-          <hr className="!border-onyx-light"/>
+          <hr className="!border-onyx-light my-4"/>
 
           <div id="recently-accessed" className="flex flex-col gap-2">
             

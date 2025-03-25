@@ -1,0 +1,1 @@
+ALTER TABLE `tags` ADD CONSTRAINT `tags_userId_name_unique` UNIQUE(`userId`,`name`);

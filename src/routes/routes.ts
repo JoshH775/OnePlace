@@ -10,6 +10,7 @@ import { registerAuthRoutes } from "./authRoutes";
 import { registerUserRoutes } from "./userRoutes";
 import registerPhotosRoutes from "./photosRoutes";
 import { registerCollectionRoutes } from "./collectionRoutes";
+import registerTagRoutes from "./tagRoutes";
 
 export function registerRoutes(
   server: FastifyInstance,
@@ -26,7 +27,7 @@ export function registerRoutes(
   });
 
   server.setErrorHandler((error, request, reply) => {
-    console.error(error); // Log the error for debugging
+    console.log(error); // Log the error for debugging
 
     // Check for custom error types or default to generic
     if (error.validation) {
@@ -47,6 +48,7 @@ export function registerRoutes(
   registerUserRoutes(server);
   registerPhotosRoutes(server);
   registerCollectionRoutes(server);
+  registerTagRoutes(server);
 
 }
 

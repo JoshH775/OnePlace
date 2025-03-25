@@ -42,6 +42,12 @@ export interface Photo {
   compressed: boolean;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+  color: string | null;
+}
+
 export type Filters = {
   collectionId?: number
   dateRange?: { min: string, max: string}

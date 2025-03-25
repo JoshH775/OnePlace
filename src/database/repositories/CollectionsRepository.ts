@@ -17,7 +17,7 @@ export default class CollectionsRepository {
     return collection!;
   }
 
-  async getCollectionsForUser(userId: number, query: string | undefined): Promise<Collection[] | null> {
+  async getCollectionsForUser(userId: number, query?: string): Promise<Collection[] | null> {
 
     try {
       const collections = await db.query.collectionsTable.findMany({

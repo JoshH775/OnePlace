@@ -15,6 +15,12 @@ import Collections from "./pages/Collections/Collections";
 import CollectionView from "./pages/CollectionView";
 
 const queryClient = new QueryClient();
+queryClient.setDefaultOptions({
+  queries: {
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5,
+  }
+})
 
 createRoot(document.getElementById("root")!).render(
   // <StrictMode>

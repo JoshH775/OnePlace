@@ -131,7 +131,7 @@ export function registerCollectionRoutes(server: FastifyInstance) {
       return { error: "Collection not found" }
     }
 
-    const photos = await Photos.findWithFilters({ collectionId: parseInt(collectionId) }, userId)
+    const photos = await Photos.getWithFilters({ collectionId: parseInt(collectionId) }, userId)
     return photos
   
   })

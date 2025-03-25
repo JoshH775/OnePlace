@@ -2,8 +2,10 @@ import { FastifyInstance } from "fastify";
 import { getAllIntegrationsForUser } from "../database/repositories/IntegrationUtils";
 import SettingsRepository from "../database/repositories/SettingsRepository";
 import { User, UserSettingsKeysType } from "../../shared/types";
+import TagsRepository from "@backend/database/repositories/TagsRepository";
 
 const Settings = new SettingsRepository()
+const Tags = new TagsRepository()
 
 export function registerUserRoutes(server: FastifyInstance) {
   server.get("/api/user", async (request, reply) => {
