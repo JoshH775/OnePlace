@@ -10,7 +10,6 @@ export type User = {
 export type UserData = Omit<User, 'password'> & {
   integrations: Record<string, GoogleClientIntegration>; // key is the integration name (e.g. "google") and value is the integration object (e.g. GoogleIntegration)
   settings: SettingsObject;
-  tags: Tag[];
 };
 
 

@@ -12,8 +12,7 @@ export function registerUserRoutes(server: FastifyInstance) {
     const user = request.user as User;
     const integrations = await getAllIntegrationsForUser(user.id, false);
     const settings = await Settings.getAllForUser(user.id);
-    const tags = await Tags.getTagsForUser(user.id);
-    return { user, integrations, settings, tags };
+    return { user, integrations, settings };
   });
 
   server.get("/api/user/settings", async (request, reply) => {
