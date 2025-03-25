@@ -10,6 +10,7 @@ import { registerAuthRoutes } from "./authRoutes";
 import { registerUserRoutes } from "./userRoutes";
 import registerPhotosRoutes from "./photosRoutes";
 import { registerCollectionRoutes } from "./collectionRoutes";
+import registerTagRoutes from "./tagRoutes";
 
 export function registerRoutes(
   server: FastifyInstance,
@@ -47,6 +48,7 @@ export function registerRoutes(
   registerUserRoutes(server);
   registerPhotosRoutes(server);
   registerCollectionRoutes(server);
+  registerTagRoutes(server);
 
 }
 

@@ -4,6 +4,7 @@ import {
   Photo,
   ProtoPhoto,
   SettingKeyType,
+  Tag,
   UserData,
 } from "@shared/types";
 import imageCompression, { Options } from "browser-image-compression";
@@ -57,6 +58,12 @@ async function req<T>(
     }
 
     if (!response.ok) {
+
+      if (response.status === 401 && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+        return { status: 401, data: null, error: "Unauthorized" };
+      }
+
       const errorMessage = data?.error || response.statusText;
       return {
         status: response.status,
@@ -237,6 +244,73 @@ const photosAPI = {
     }
 
     return { success: true };
+  },
+
+  async getTagsForPhoto(photoId: number): Promise<Tag[]> {
+    const { data, error } = await req<Tag[]>(`/photos/${photoId}/tags`);
+
+    if (error || !data) {
+      console.error("Error getting tags for photo:", error);
+      return [];
+    }
+
+    return data;
+  },
+
+  async addTagToPhoto(photoId: number, tagData: { name: string, color?: string}): Promise<Tag[]> {
+    const { status, error, data } = await req<Tag[]>(`/photos/${photoId}/tags`, {
+      method: "POST",
+      body: { tag: tagData },
+    });
+
+    if (error || !statusIsOk(status) || !data) {
+      console.error("Error adding tag to photo:", error);
+      return [];
+    }
+
+    return data;
+
+
+  },
+
+  async removeTagFromPhoto(photoId: number, tagId: number): Promise<Tag[]> {
+    const { status, error, data } = await req<Tag[]>(`/photos/${photoId}/tags/${tagId}`, {
+      method: "DELETE",
+    });
+
+    if (error || !statusIsOk(status) || !data) {
+      console.error("Error removing tag from photo:", error);
+      return [];
+    }
+
+    return data;
+  },
+}
+
+const tasgApi = {
+
+  async getTagsForUser(): Promise<Tag[]> {
+    const { data, error } = await req<Tag[]>(`/tags`);
+
+    if (error || !data) {
+      console.error("Error getting tags for user:", error);
+      return [];
+    }
+
+    return data;
+  },
+
+  async deleteTag(tagId: number): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/tags/${tagId}`, {
+      method: "DELETE",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error deleting tag:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
   }
 
 }
@@ -336,6 +410,7 @@ const api = {
   auth: authAPI,
   photos: photosAPI,
   collections: collectionsAPI,
+  tags: tasgApi,
   req,
 };
 
