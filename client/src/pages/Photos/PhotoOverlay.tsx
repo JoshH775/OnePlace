@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { OverlayRenderProps } from "react-photo-view/dist/types";
-import PhotoInfoPanel from "./PhotoInfoPanel";
+import PhotoInfoPanel from "./PhotoInfoPanel/PhotoInfoPanel";
 import ConfirmationModal from "@frontend/components/modals/ConfirmationModal";
 
 type Props = {
@@ -21,9 +21,26 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
 
   const queryClient = useQueryClient();
 
+  sessionStorage.setItem("photoId", photo!.id.toString());
+
   const { mutateAsync } = useMutation({
     mutationFn: async () => api.photos.deletePhoto(photo!.id),
   })
+
+  //Prefetching the photo tags in case the user wants to see them
+  queryClient.prefetchQuery({
+    queryKey: ["photoTags", photo?.id],
+    queryFn: () => api.photos.getTagsForPhoto(photo!.id),
+  })
+
+
+  // For later
+  // queryClient.prefetchQuery({
+  //   queryKey: ["photoCollections", photo?.id],
+  //   queryFn: () => api.photos.getCollectionsForPhoto(photo!.id),
+  // })
+
+  
 
   if (!photo) return null;
 
@@ -103,7 +120,7 @@ export default function PhotoOverlay({ overlayProps, photo }: Props) {
             </span>
           </motion.div>
 
-          <PhotoInfoPanel photo={photo} isOpen={editPanelOpen} />
+          <PhotoInfoPanel photo={photo} isOpen={editPanelOpen}  />
         </div>
       )}
     </>
