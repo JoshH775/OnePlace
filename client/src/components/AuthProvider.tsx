@@ -8,8 +8,13 @@ type AuthContextType = {
   isLoading: boolean;
   logout: () => void;
   login: (email: string, password: string) => Promise<boolean>;
-  updateUser: (user: UserData) => void;
+  updateUser: (data: UpdateUserObject) => void;
 };
+
+type UpdateUserObject = {
+  integrations?: UserData["integrations"];
+  settings?: UserData["settings"];
+}
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -44,8 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return success
   }
 
-  const updateUser = (updatedUserData: UserData) => {
-    const updatedUser = { ...user, ...updatedUserData }
+  const updateUser = (updatedUserData: UpdateUserObject) => {
+    
+    const updatedUser = { ...user, ...updatedUserData };
+
     queryClient.setQueryData(["user"], updatedUser);
   }
 
