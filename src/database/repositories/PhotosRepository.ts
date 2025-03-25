@@ -1,11 +1,14 @@
 import { and, eq, gt, lt } from "drizzle-orm";
 import { db } from "../initDB";
-import { collectionPhotosTable, photosTable } from "../schema";
-import { Filters, Photo, ProtoPhoto, UpdatablePhotoProperties } from "@shared/types";
+import { collectionPhotosTable, photosTable, photoTagsTable, tagsTable } from "../schema";
+import { Filters, Photo, ProtoPhoto, Tag, UpdatablePhotoProperties } from "@shared/types";
 import { MySqlSelect } from "drizzle-orm/mysql-core";
+import TagRepository from "./TagsRepository";
+
+const Tags = new TagRepository()
 
 export default class PhotosRepository {
-  async findById(id: number, userId: number): Promise<Photo | null> {
+  async getById(id: number, userId: number): Promise<Photo | null> {
     const photo = await db.query.photosTable.findFirst({
       where: (photo, { and, eq }) =>
         and(eq(photo.userId, userId), eq(photo.id, id)),
@@ -41,7 +44,6 @@ export default class PhotosRepository {
     
     const photoValues: UpdatablePhotoProperties = {
       date: photo.date,
-      filename: photo.filename,
       location: photo.location,
     };
 
@@ -54,17 +56,21 @@ export default class PhotosRepository {
 
   }
 
+  async delete(id: number) {
+    await db.delete(photosTable).where(eq(photosTable.id, id));
+  }
+
   async deleteAllForUser(userId: number) {
     await db.delete(photosTable).where(eq(photosTable.userId, userId));
   }
 
-  async findAllForUser(userId: number): Promise<Photo[]> {
+  async getAllForUser(userId: number): Promise<Photo[]> {
     return await db.query.photosTable.findMany({
       where: (photos, { eq }) => eq(photos.userId, userId),
     });
   }
 
-  async findWithFilters(filters: Filters, userId: number): Promise<Photo[]> {
+  async getWithFilters(filters: Filters, userId: number): Promise<Photo[]> {
 
     let query = db.select({
       id: photosTable.id,
@@ -104,7 +110,34 @@ export default class PhotosRepository {
     return await query.execute()
   }
 
-  async deletePhotoById(id: number) {
-    await db.delete(photosTable).where(eq(photosTable.id, id));
+
+
+  async getTagsForPhoto(photoId: number): Promise<Tag[]> {
+    const tags = await db.select({ id: tagsTable.id, userId: tagsTable.userId, name: tagsTable.name, color: tagsTable.color })
+      .from(tagsTable)
+      .leftJoin(photoTagsTable, eq(photoTagsTable.tagId, tagsTable.id))
+      .where(eq(photoTagsTable.photoId, photoId))
+
+      return tags
   }
+
+  async addTagToPhoto(photoId: number, tagData: { name: string, color?: string }, userId: number): Promise<Tag> {
+    const existingTag = await Tags.getByName(userId, tagData.name)
+
+    if (!existingTag) {
+      const newTag = await Tags.create(userId, tagData)
+      await db.insert(photoTagsTable).values({ photoId, tagId: newTag }).execute()
+
+      return { id: newTag, name: tagData.name, color: tagData.color || null }
+    }
+
+    await db.insert(photoTagsTable).values({ photoId, tagId: existingTag.id })
+    return existingTag
+  }
+
+  async removeTagFromPhoto(photoId: number, tagId: number) {
+    await db.delete(photoTagsTable).where(and(eq(photoTagsTable.photoId, photoId), eq(photoTagsTable.tagId, tagId)))
+}
+
+  
 }

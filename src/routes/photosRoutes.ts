@@ -19,10 +19,10 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         thumbnail?: string
         download?: string
       }
-      const photo = await Photos.findById(parseInt(id), userId)
+      const photo = await Photos.getById(parseInt(id), userId)
 
       if (!photo) {
-        throw new Error("Photo not found")
+        return res.status(404).send({ error: "Photo not found" })
       }
 
       const path =
@@ -75,7 +75,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       }
 
       if (files.length === 0) {
-        throw new Error("No files uploaded")
+        return res.status(400).send({ error: "No files uploaded" })
       }
 
       await Photos.create(
@@ -108,11 +108,11 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       const filters = req.body as Filters | null
 
       if (!filters) {
-        const photos = await Photos.findAllForUser(userId)
+        const photos = await Photos.getAllForUser(userId)
         return res.send(photos)
       }
 
-      const photos = await Photos.findWithFilters(filters, userId)
+      const photos = await Photos.getWithFilters(filters, userId)
       return res.send(photos)
     })
   )
@@ -125,8 +125,11 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
       if (!newPhoto) throw new Error("Photo data is required")
 
-      const photo = await Photos.findById(newPhoto.id, userId)
-      if (!photo) throw new Error("Photo not found")
+      const photo = await Photos.getById(newPhoto.id, userId)
+      
+      if (!photo) {
+        return res.status(404).send({ error: "Photo not found" })
+      }
 
       await Photos.update(newPhoto, userId)
 
@@ -141,10 +144,10 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       const { id: userId } = req.user as User
 
       const deletePromises = ids.map(async (id) => {
-        const photo = await Photos.findById(id, userId)
+        const photo = await Photos.getById(id, userId)
         if (!photo) return null
         await deletePhotoFromFirebase(photo, userId)
-        await Photos.deletePhotoById(id)
+        await Photos.delete(id)
       })
 
       await Promise.all(deletePromises)
@@ -169,20 +172,84 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       const { id } = req.params as { id?: string }
 
       if (!id) {
-        throw new Error("Photo ID is required")
+        return res.status(400).send({ error: "Invalid request" })
       }
 
-      const photo = await Photos.findById(parseInt(id), userId)
+      const photo = await Photos.getById(parseInt(id), userId)
 
       if (!photo) {
-        throw new Error("Photo not found")
+        return res.status(404).send({ error: "Photo not found" })
       }
 
       await deletePhotoFromFirebase(photo, userId)
-      await Photos.deletePhotoById(parseInt(id))
+      await Photos.delete(parseInt(id))
       return res.status(204).send()
     })
   )
+
+  //Tags
+
+  server.get(
+    "/api/photos/:id/tags", asyncHandler(async (req, res) => {
+      const { id: userId } = req.user as User
+      const { id } = req.params as { id: string }
+      const photo = await Photos.getById(parseInt(id), userId)
+
+      if (!photo) {
+        return res.status(404).send({ error: "Photo not found" })
+      }
+
+      const tags = await Photos.getTagsForPhoto(photo.id)
+      return res.send(tags)
+    }))
+
+  server.post(
+    "/api/photos/:id/tags", asyncHandler(async (req, res) => {
+      const { id: userId } = req.user as User
+      const { id } = req.params as { id: string }
+      const { tag } = req.body as { tag: { name: string, color?: string} }
+
+      if (!tag) {
+        return res.status(400).send({ error: "Tags are required" })
+      }
+
+      const photo = await Photos.getById(parseInt(id), userId)
+
+      if (!photo) {
+        return res.status(404).send({ error: "Photo not found" })
+      }
+
+      await Photos.addTagToPhoto(photo.id, tag, userId)
+
+      const allTags = await Photos.getTagsForPhoto(photo.id)
+      return res.send(allTags)
+    }))
+
+  server.delete(
+    "/api/photos/:id/tags/:tagId", asyncHandler(async (req, res) => {
+      const { id: userId } = req.user as User
+      const { id, tagId } = req.params as { id: string, tagId: string }
+
+      if (!id || !tagId) {
+        return res.status(400).send({ error: "Invalid request" })
+      }
+
+      const photo = await Photos.getById(parseInt(id), userId)
+      if (!photo) {
+        return res.status(404).send({ error: "Photo not found" })
+      }
+
+      await Photos.removeTagFromPhoto(photo.id, parseInt(tagId))
+      
+      const allTags = await Photos.getTagsForPhoto(photo.id)
+      return res.send(allTags)
+    })
+
+
+
+      
+  )
+
 }
 
 async function deleteUserPhotosFromFirebase(userId: number) {
