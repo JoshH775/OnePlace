@@ -49,9 +49,10 @@ export interface Tag {
 }
 
 export type Filters = {
-  collectionId?: number
+  collectionIds?: number[];
   dateRange?: { min: string, max: string}
   uploadDateRange?: { min: string, max: string}
+  name?: string;
 }
 
 export interface UpdatablePhotoProperties {
