@@ -44,7 +44,7 @@ export default function Modal({
             transition={animations.transition}
             className="w-full h-full flex items-center justify-center"
           >
-            <DialogPanel className="bg-white dark:bg-onyx rounded-lg p-6 w-1/3  max-w-[600px]">
+            <DialogPanel className="bg-white dark:bg-onyx md:rounded-lg rounded-none p-6 md:w-1/3 w-full md:max-w-[600px] ">
               <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2 indigo-underline">
                   {icon}
