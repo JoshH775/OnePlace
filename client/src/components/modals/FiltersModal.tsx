@@ -1,14 +1,13 @@
 import { Collection, Filters } from "@shared/types";
 import Modal from "../ui/Modal";
 import { Calendar, Filter, FolderOpen, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useReducer } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { Field, Label } from "@headlessui/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import api from "@frontend/utils/api";
 import CollectionsPopover from "../CollectionsPopover";
-import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
 
 type Props = {
@@ -52,13 +51,44 @@ const ActiveFilter = ({
 };
 
 export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
-  const [filters, setFilters] = useState<Filters>({
-    collectionIds: [],
-    name: "",
-    uploadDateRange: { min: '2025-03-16 19:28:28', max: '2025-03-29 19:27:28'}
-  });
 
-  console.log(filters);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function reducer(state: Filters, action: {type: string; payload: any }): Filters {
+    switch (action.type) {
+      case "SET_NAME": {
+        if (action.payload.length === 0) {
+          return { ...state, name: undefined };
+        }
+        return { ...state, name: action.payload };
+      }
+      case "ADD_COLLECTION": 
+      return { ...state, collectionIds: [...state.collectionIds || [], action.payload] }
+      case "REMOVE_COLLECTION":
+        return {
+          ...state,
+          collectionIds: state.collectionIds?.filter((id) => id !== action.payload),
+        };
+      case "SET_DATE_RANGE":
+        console.log(action.payload);
+        return {
+          ...state,
+          dateRange: {
+            min: action.payload.min || state.dateRange?.min,
+            max: action.payload.max || state.dateRange?.max,
+          },
+        };
+      default:
+        return state;
+
+    }
+  }
+
+  const [filtersState, dispatch] = useReducer(reducer, {});
+  
+  const applyFilters = () => {
+    onSetFilters(filtersState);
+    onClose();
+  };
 
   const { data: tags } = useSuspenseQuery({
     queryKey: ["tags"],
@@ -71,51 +101,24 @@ export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
   });
 
   //Submit
-  const applyFilters = () => {
-    onSetFilters(filters);
-    onClose();
+
+  const addCollection = (collection: Collection) => {
+    if (filtersState.collectionIds?.includes(collection.id)) {
+      dispatch({ type: "REMOVE_COLLECTION", payload: collection.id });
+    } else {
+      dispatch({ type: "ADD_COLLECTION", payload: collection.id });
+    }
   };
 
   const removeNameFilter = () => {
-    const updatedFilters = { ...filters };
-    delete updatedFilters.name;
-    setFilters(updatedFilters);
+    dispatch({ type: "SET_NAME", payload: "" });
   };
-
-  const addCollection = (collection: Collection) => {
-    setFilters((prevFilters) => {
-      const collectionIds = prevFilters.collectionIds || [];
-
-      if (collectionIds.includes(collection.id)) {
-        return {
-          ...prevFilters,
-          collectionIds: collectionIds.filter((id) => id !== collection.id),
-        };
-      } else {
-        return {
-          ...prevFilters,
-          collectionIds: [...collectionIds, collection.id],
-        };
-      }
-    });
-  };
-
-  const setUploadDateRange = (value: string, key: 'min' | 'max') =>  {
-    setFilters((prevFilters) => {
-        const range = { ...prevFilters.uploadDateRange, [key]: value}
-        return {
-            ...prevFilters,
-            uploadDateRange: range
-
-        }
-    })
-  }
 
   const hasActiveFilters =
-    filters.name ||
-    (filters.collectionIds && filters.collectionIds.length > 0) ||
-    filters.dateRange ||
-    filters.uploadDateRange;
+    filtersState.name ||
+    (filtersState.collectionIds && filtersState.collectionIds.length > 0) ||
+    filtersState.dateRange ||
+    filtersState.uploadDateRange;
 
   function findCollectionById(id: number) {
     return collections.find((c) => c.id === id) as Collection;
@@ -135,22 +138,21 @@ export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
               Active Filters
               <span
                 className="text-xs cursor-pointer"
-                onClick={() => setFilters({})}
               >
                 Clear all
               </span>
             </span>
             <div className="flex flex-wrap gap-2">
-              {filters.name && (
+              {filtersState.name && (
                 <ActiveFilter
-                  name={filters.name}
+                  name={filtersState.name}
                   onRemove={removeNameFilter}
                   type="name"
                 />
               )}
-              {filters.collectionIds &&
-                filters.collectionIds.length > 0 &&
-                filters.collectionIds.map((collectionId) => (
+              {filtersState.collectionIds &&
+                filtersState.collectionIds.length > 0 &&
+                filtersState.collectionIds.map((collectionId) => (
                   <ActiveFilter
                     key={collectionId}
                     name={`${findCollectionById(collectionId).name}`}
@@ -172,8 +174,8 @@ export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
           <Input
             name="search"
             className="mt-1 text-sm"
-            value={filters.name}
-            onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+            value={filtersState.name}
+            onChange={(e) => dispatch({ type: "SET_NAME", payload: e.target.value })}
             placeholder="Search by name..."
           />
         </Field>
@@ -184,9 +186,9 @@ export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
                 Date Uploaded
             </span>
             <div className="w-full flex items-center gap-3">
-                <Input type="date" value={moment(filters.uploadDateRange?.min).format('YYYY-MM-DD')} ref={} className="!w-fit !p-1 rounded-sm"/>
+                <Input type="date" value={moment(filtersState.dateRange?.min).format('YYYY-MM-DD')} className="!w-fit !p-1 rounded-sm" onChange={(e) => dispatch({type: 'SET_DATE_RANGE', payload: { min: e.target.value}})}/>
                 <p>to</p>
-                <input type="date" value={moment(filters.uploadDateRange?.max).format('YYYY-MM-DD')} className="dark:bg-onyx-light border dark:border-gray-500 p-1 rounded-sm"/>
+                <input type="date" value={moment(filtersState.dateRange?.max).format('YYYY-MM-DD')} className="dark:bg-onyx-light border dark:border-gray-500 p-1 rounded-sm"/>
             </div>
         </div>
 
@@ -196,7 +198,7 @@ export default function FiltersModal({ isOpen, onClose, onSetFilters }: Props) {
             Collections
           </span>
           <CollectionsPopover
-            selectedCollectionIds={filters.collectionIds}
+            selectedCollectionIds={filtersState.collectionIds}
             onToggle={addCollection}
           />
         </div>
