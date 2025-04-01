@@ -6,16 +6,14 @@ import api from "../../utils/api";
 import { Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
-import { ArrowDownToLine, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import {
-  SelectOutline,
-  SelectSolid,
-} from "@frontend/components/ui/CustomIcons";
+import { ArrowDownToLine, Filter, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import Toolbar from "@frontend/components/ui/Toolbar";
 import Header from "@frontend/components/Header";
 import Spinner from "@frontend/components/ui/Spinner";
 import toast from "react-hot-toast";
 import PhotoGallery from "@frontend/components/PhotoGallery";
+import Button from "@frontend/components/ui/Button";
+import FiltersModal from "@frontend/components/modals/FiltersModal";
 
 
 export default function Photos() {
@@ -29,6 +27,17 @@ export default function Photos() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filtersModal, setFiltersModal] = useState(false);
+
+  queryClient.prefetchQuery({
+    queryKey: ["userTags"],
+    queryFn: () => api.tags.getTagsForUser(),
+  });
+
+  queryClient.prefetchQuery({
+    queryKey: ["collections"],
+    queryFn: () => api.collections.getCollections(),
+  })
 
   const filters = {};
   const { data } = useSuspenseQuery({
@@ -108,6 +117,8 @@ export default function Photos() {
         onClose={() => setAddToCollectionModalOpen(false)}
         photos={selectedPhotos}
       />
+
+      <FiltersModal isOpen={filtersModal} onClose={() => setFiltersModal(false)} onSetFilters={(filters) => console.log(filters)} />
       <Header className="gap-4">
         <p className="text-3xl indigo-underline font-bold">Photos</p>
         <Input
@@ -120,25 +131,17 @@ export default function Photos() {
         />
 
         <div className="flex gap-1">
-          <IconButton
-            icon={<ArrowDownToLine className="h-10 w-10 p-1" />}
-            onClick={() => console.log("sort")}
-            className="ml-2"
-          />
-          <IconButton
-            icon={<SlidersHorizontal className="h-10 w-10 p-1" />}
-            onClick={() => console.log("filter")}
-          />
-          <IconButton
-            icon={
-              selectMode ? (
-                <SelectSolid className="h-10 w-10 p-1" />
-              ) : (
-                <SelectOutline className="h-10 w-10 p-1" />
-              )
-            }
-            onClick={() => setSelectMode((prevState) => !prevState)}
-          />
+          
+          <Button onClick={() => setFiltersModal(true)}>
+            <Filter className="h-7 w-7 " />
+          </Button>
+          <Button>
+            <SlidersHorizontal className="h-7 w-7 " />
+          </Button>
+          <Button onClick={() => setSelectMode((prev) => !prev)}>
+            <Plus className="h-7 w-7 " />
+          </Button>
+          
         </div>
       </Header>
 
