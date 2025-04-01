@@ -97,7 +97,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
 
       await uploadPhotoToGoogle(userId, files)
 
-      return res.status(201)
+      return res.status(201).send()
     })
   )
 
@@ -151,7 +151,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       })
 
       await Promise.all(deletePromises)
-      return res.status(204)
+      return res.status(204).send()
     })
   )
 
@@ -161,7 +161,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       const { id } = req.user as User
       await deleteUserPhotosFromFirebase(id)
       await Photos.deleteAllForUser(id)
-      return res.status(204)
+      return res.status(204).send()
     })
   )
 
@@ -244,10 +244,6 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       const allTags = await Photos.getTagsForPhoto(photo.id)
       return res.send(allTags)
     })
-
-
-
-      
   )
 
 }
