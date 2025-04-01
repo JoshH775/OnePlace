@@ -88,11 +88,17 @@ export default class PhotosRepository {
     }).from(photosTable).where(eq(photosTable.userId, userId)).$dynamic()
 
     function withFilters<T extends MySqlSelect>(qb: T, filters: Filters) {
-      const { collectionId, dateRange, uploadDateRange } = filters
+      const { collectionIds, dateRange, uploadDateRange } = filters
 
-      if (collectionId) {
-       qb.leftJoin(collectionPhotosTable, eq(collectionPhotosTable.photoId, photosTable.id)).where(eq(collectionPhotosTable.collectionId, collectionId))
-      }
+      
+      // if (collectionIds && collectionIds.length > 0) {
+      //   qb.where(
+      //     and(
+      //   collectionPhotosTable.collectionId.in(collectionIds),
+      //   eq(collectionPhotosTable.photoId, photosTable.id)
+      //     )
+      //   )
+      // }
 
       if (dateRange) {
         qb.where(and(gt(photosTable.date, dateRange.min), lt(photosTable.date, dateRange.max)))
