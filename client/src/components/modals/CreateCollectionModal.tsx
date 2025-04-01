@@ -26,9 +26,9 @@ export default function CreateCollectionModal({ isOpen, onClose }: CreateCollect
       const description = (e.currentTarget.elements.namedItem("description") as HTMLInputElement).value
   
       const collection = await mutateAsync({ name, description })
+      toast.dismiss()
 
       if (!collection) {
-        toast.dismiss()
         toast.error("Error creating collection")
         return
       }
