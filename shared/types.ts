@@ -50,8 +50,9 @@ export interface Tag {
 
 export type Filters = {
   collectionIds?: number[];
-  dateRange?: { min: string, max: string}
-  uploadDateRange?: { min: string, max: string}
+  dateRange?: { min?: string, max?: string}
+  uploadDateRange?: { min?: string, max?: string}
+  tags?: Tag[];
   name?: string;
 }
 
