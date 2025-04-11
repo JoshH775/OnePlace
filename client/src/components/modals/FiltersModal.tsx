@@ -5,7 +5,7 @@ import { useReducer } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import {  Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import api from "@frontend/utils/api";
 import CollectionsPopover from "../CollectionsPopover";
 import moment from "moment";
