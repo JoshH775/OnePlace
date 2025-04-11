@@ -131,8 +131,31 @@ export function registerCollectionRoutes(server: FastifyInstance) {
       return { error: "Collection not found" }
     }
 
-    const photos = await Photos.getWithFilters({ collectionId: parseInt(collectionId) }, userId)
+    const photos = await Photos.getWithFilters({ collectionIds: [parseInt(collectionId)] }, userId)
     return photos
   
-  })
+  }))
+
+  server.put(
+    "/api/collections/:collectionId/last-accessed",
+    asyncHandler(async (req, res) => {
+      const { collectionId } = req.params as { collectionId: string }
+      const { id: userId } = req.user as User
+
+      if (!collectionId) {
+        res.status(400)
+        return { success: false, message: "Invalid request" }
+      }
+
+      const collection = await Collections.getById(parseInt(collectionId), userId)
+
+      if (!collection) {
+        res.status(404)
+        return { error: "Collection not found" }
+      }
+
+      await Collections.setLastAccessed(parseInt(collectionId), userId)
+
+      return { success: true }
+    })
 )}

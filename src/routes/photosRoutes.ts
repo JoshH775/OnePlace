@@ -196,6 +196,22 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
     })
   );
 
+  server.put(
+    "/api/photos/:id/last-accessed",
+    asyncHandler(async (req, res) => {
+      const { id: userId } = req.user as User;
+      const { id } = req.params as { id: string };
+      const photo = await Photos.getById(parseInt(id), userId);
+
+      if (!photo) {
+        return res.status(404).send({ error: "Photo not found" });
+      }
+
+      await Photos.setLastAccessed(photo.id, userId);
+      return res.status(204).send();
+    }
+  ))
+
   //Tags
 
   server.get(
