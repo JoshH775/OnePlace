@@ -10,6 +10,8 @@ import Button from "./ui/Button";
 import UploadPhotosModal from "./modals/UploadPhotosModal";
 import { useState } from "react";
 
+import { Collection } from "@shared/types";
+
 import {
   House as HouseIcon,
   Radius as RadiusIcon,
@@ -20,6 +22,8 @@ import {
   ImagePlus,
 
 } from 'lucide-react'
+import { useQuery } from "@tanstack/react-query";
+import api from "@frontend/utils/api";
 
 interface LinkProps {
   text: string;
@@ -36,25 +40,34 @@ const Link = ({ text, to, icon }: LinkProps) => {
   return (
     <RouterLink
       to={to}
-      className={"flex items-center gap-2 p-[6px] rounded-md " + bgClass}
+      className={"flex items-center gap-2 p-[6px] rounded-md !max-w-30 overflow-ellipsis overflow-hidden text-nowrap " + bgClass}
     >
-      <div className="flex gap-2">
+      <div className="flex gap-2 w-full">
         {icon}
-        <p>{text}</p>
+        <p className="w-full">{text}</p>
       </div>
     </RouterLink>
   );
 };
 
 export default function Layout() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+
+  const { data: lastAccessed = [], isLoading: lastAccessedLoading } = useQuery({
+    queryKey: ["lastAccessed"],
+    queryFn: async () => api.user.getLastAccessed(),
+    enabled: !!user,
+  })
+
+  console.log(lastAccessedLoading, lastAccessed)
 
   const [uploadModal, setUploadModal] = useState(false);
 
-  if (!user && !isLoading) {
+  if (!user && !authLoading) {
     return <Navigate to="/login" />;
   }
 
+  //now we need to create a dynamic page for viewing a single photo, and a dynamic page for viewing a single collection
   return (
       <div className="flex flex-grow w-full">
         <UploadPhotosModal isOpen={uploadModal} onClose={() => {setUploadModal(false)}}/>
@@ -100,6 +113,30 @@ export default function Layout() {
             </p>
           </span>
 
+           {!lastAccessedLoading && lastAccessed.map((item) => {
+            if ("type" in item && item.type === "photo") {
+              return (
+                <Link
+                  key={item.id}
+                  to={`/photos/${item.id}`}
+                  text={item.filename}
+                  icon={<Images className="w-6" />}
+                />
+              );
+            }
+
+            if ("type" in item && item.type === "collection") {
+              return (
+                <Link
+                  key={item.id}
+                  to={`/collections/${item.id}`}
+                  // @ts-expect-error If item.type is collection, it has a name property
+                  text={(item as Collection).name}
+                  icon={<FolderIcon className="w-6" />}
+                />
+              );
+            }
+           })}
           </div>
 
           <div
