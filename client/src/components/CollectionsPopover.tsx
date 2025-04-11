@@ -79,7 +79,7 @@ export default function CollectionsPopover({
         </span>
 
         <Suspense fallback={<p>Loading...</p>}>
-          <div className="p-2 flex flex-col w-full">
+          <div className="p-2 flex flex-col w-full max-h-120 overflow-y-auto">
             {filteredCollections.map((collection) => (
               <CollectionItem key={collection.id} collection={collection} />
             ))}
