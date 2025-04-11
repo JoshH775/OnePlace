@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 import { ProtoPhoto } from "@shared/types";
 import { useAuth } from "../AuthProvider";
 import _ from "lodash";
-import { CHUNK_SIZE } from "@shared/constants";
+import { CHUNK_SIZE, TimestampFormat } from "@shared/constants";
+import moment from "moment";
 
 type Props = {
   isOpen: boolean;
@@ -27,7 +28,6 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
       acceptedFiles: { file: File; metadata: ProtoPhoto }[];
       compress: boolean;
     }) => {
-
       //Performing chunking before sending through api
       const totalSize = acceptedFiles.reduce(
         (acc, { file }) => acc + file.size,
@@ -50,7 +50,7 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
       } else {
         return api.photos.uploadPhotos(acceptedFiles, compress);
       }
-    }
+    },
   });
 
   const onDrop = useCallback(
@@ -86,17 +86,16 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
       toast.loading("Uploading photos ...");
       const success = await mutateAsync({
         acceptedFiles: filesWithMetadata,
-        compress, });
+        compress,
+      });
 
       if (success) {
         toast.dismiss();
         toast.success("Photos uploaded successfully");
         queryClient.invalidateQueries({ queryKey: ["photos"] });
         onClose();
-      } 
-    }
-    ,
-      
+      }
+    },
     [mutateAsync, compress, queryClient, onClose]
   );
 
@@ -153,6 +152,8 @@ async function parseFileMetadata(
   const latitude = tags["GPSLatitude"]?.description as number | undefined;
   const longitude = tags["GPSLongitude"]?.description as number | undefined;
 
+  console.log(tags);
+
   let location = null;
 
   if (latitude && longitude) {
@@ -162,10 +163,16 @@ async function parseFileMetadata(
     }
   }
 
-  let date = null
-  const dateTaken = tags['DateCreated']
+  let date = null;
+  const dateTaken = tags["DateTimeOriginal"] || tags["DateCreated"];
+
+  const possibleFormats = ["YYYY:MM:DD HH:mm:ss", "YYYY-MM-DDTHH:mm:ss.SS"];
+
   if (dateTaken) {
-    date = dateTaken.value
+    const parsedDate = moment(dateTaken.description, possibleFormats, true);
+    if (parsedDate.isValid()) {
+      date = parsedDate.format(TimestampFormat);
+    }
   }
 
   const metadata: ProtoPhoto = {
@@ -174,7 +181,7 @@ async function parseFileMetadata(
     alias: null,
     compressed: false,
     size: file.size,
-    date: date,
+    date: date || null,
     type: `image/${type}`,
   };
 
