@@ -1,33 +1,33 @@
 import { Input } from "@headlessui/react";
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import IconButton from "../../components/ui/IconButton";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
-import { Photo } from "@shared/types";
+import { Filters, Photo } from "@shared/types";
 // import JSZip from "jszip";
 import AddToCollectionModal from "@frontend/components/modals/AddToCollectionModal";
 import { ArrowDownToLine, Filter, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import Toolbar from "@frontend/components/ui/Toolbar";
 import Header from "@frontend/components/Header";
-import Spinner from "@frontend/components/ui/Spinner";
 import toast from "react-hot-toast";
 import PhotoGallery from "@frontend/components/PhotoGallery";
 import Button from "@frontend/components/ui/Button";
 import FiltersModal from "@frontend/components/modals/FiltersModal";
+import { debounce } from "lodash";
 
 
 export default function Photos() {
   const [searchInput, setSearchInput] = useState("");
-
   const [addToCollectionModalOpen, setAddToCollectionModalOpen] =
     useState(false);
-
   const queryClient = useQueryClient();
-
   const [selectMode, setSelectMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
   const [filtersModal, setFiltersModal] = useState(false);
+  const [filters, setFilters] = useState({})
+
+
 
   queryClient.prefetchQuery({
     queryKey: ["userTags"],
@@ -39,11 +39,6 @@ export default function Photos() {
     queryFn: () => api.collections.getCollections(),
   })
 
-  const filters = {};
-  const { data } = useSuspenseQuery({
-    queryKey: ["photos", filters],
-    queryFn: () => api.photos.getPhotos(filters),
-  });
 
   const { mutateAsync: bulkDeleteMutation } = useMutation({
     mutationFn: async (photoIds: number[]) => api.photos.bulkDeletePhotos(photoIds),
@@ -59,6 +54,25 @@ export default function Photos() {
         );
       }
   };
+
+  const applyFilters = (f: Filters) => {
+    console.log("Applying filters:", f)
+    if (!f) return
+    setFilters(f)
+  }
+  
+  const debouncedApplyFilters = useCallback(
+    debounce((newFilters: Filters) => {
+      setFilters(newFilters);
+    }, 500),
+    []
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+    debouncedApplyFilters({ ...filters, name: e.target.value });
+  }
+
 
   const downloadSelected = async () => {
     alert("Download selected photos not implemented yet");
@@ -118,7 +132,7 @@ export default function Photos() {
         photos={selectedPhotos}
       />
 
-      <FiltersModal isOpen={filtersModal} onClose={() => setFiltersModal(false)} onSetFilters={(filters) => console.log(filters)} />
+      <FiltersModal isOpen={filtersModal} onClose={() => setFiltersModal(false)} onSetFilters={applyFilters}  />
       <Header className="gap-4">
         <p className="text-3xl indigo-underline font-bold">Photos</p>
         <Input
@@ -126,15 +140,23 @@ export default function Photos() {
           type="text"
           placeholder="Search all photos..."
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full rounded-xl p-2 px-4 outline-none text-base border border-gray-300 dark:border-onyx-light"
         />
 
         <div className="flex gap-1">
           
-          <Button onClick={() => setFiltersModal(true)}>
-            <Filter className="h-7 w-7 " />
-          </Button>
+        <div className="flex gap-1 relative">
+  <Button onClick={() => setFiltersModal(true)} className="relative">
+    <Filter className="h-7 w-7" />
+  </Button>
+
+  {Object.keys(filters).length > 0 && (
+    <span className="absolute top-0 right-0 translate-x-1/4 -translate-y-1/3 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 font-bold rounded-full">
+      {Object.keys(filters).length}
+    </span>
+  )}
+</div>
           <Button>
             <SlidersHorizontal className="h-7 w-7 " />
           </Button>
@@ -145,14 +167,10 @@ export default function Photos() {
         </div>
       </Header>
 
-      <Suspense fallback={<Spinner />}>
         <PhotoGallery
-          photos={data}
+          filters={filters}
           selectMode={selectMode}
           handleClick={handleClick} />
-      </Suspense>
-
-
 
       <Toolbar isOpen={selectMode} loading={loading}>
         <IconButton
