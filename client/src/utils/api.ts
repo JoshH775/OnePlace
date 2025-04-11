@@ -102,6 +102,7 @@ const userAPI = {
 
     return userData;
   },
+
   async updateSetting(setting: {
     key: SettingKeyType;
     value: string;
@@ -118,6 +119,17 @@ const userAPI = {
 
     return { success: true };
   },
+
+  async getLastAccessed(): Promise<(Collection | Photo)[]> {
+    const { data, error } = await req<(Collection | Photo)[]>("/user/last-accessed");
+
+    if (error || !data) {
+      console.error("Error getting last accessed:", error);
+      return [];
+    }
+
+    return data;
+  }
 };
 
 const authAPI = {
@@ -285,6 +297,19 @@ const photosAPI = {
 
     return data;
   },
+
+  async setLastAccessed(photoId: number): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/photos/${photoId}/last-accessed`, {
+      method: "POST",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error setting last accessed:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  }
 }
 
 const tasgApi = {
@@ -403,6 +428,21 @@ const collectionsAPI = {
 
     return { success: true };
   },
+
+  async setLastAccessed(
+    collectionId: number): Promise<{ success: boolean; error?: string }> {
+    const { status, error } = await req(`/collections/${collectionId}/last-accessed`, {
+      method: "POST",
+    });
+
+    if (error || !statusIsOk(status)) {
+      console.error("Error setting last accessed:", error);
+      return { success: false, error: error || "Unknown error" };
+    }
+
+    return { success: true };
+  },
+
 };
 
 const api = {
