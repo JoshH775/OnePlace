@@ -78,16 +78,26 @@ export default function TagsModal({ isOpen, onClose, currentTags }: Props) {
       return;
     }
 
-    const allTags = await addTagMutation({ name, color });
-    queryClient.setQueryData(["photoTags", photoId], allTags);
-
     const existing = userTags?.find((tag) => tag.name === name);
-    if (!existing) {
+
+    if (existing) {
+      queryClient.setQueryData(["photoTags", photoId], (prev: Tag[]) => [...prev, existing]);
+      await addTagMutation({ name, color });
+      return;
+    } else {
+      const allTags = await addTagMutation({ name, color });
+      queryClient.setQueryData(["photoTags", photoId], allTags);
+
       queryClient.setQueryData(
         ["userTags"],
         [...userTags, { name, color, id: allTags[allTags.length - 1].id }]
       );
     }
+
+
+
+   
+
   };
 
   const createTag = async (name: string, color?: string) => {

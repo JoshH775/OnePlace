@@ -57,6 +57,7 @@ export default function AddToCollectionModal({
     const photoIds = photos.map((photo) => photo.id);
     const { success, error } = await mutateAsync(photoIds);
 
+    toast.dismiss();
     if (!success || error) {
       toast.error(error || "Failed to add photos to collection");
     } else {

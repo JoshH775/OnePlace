@@ -41,11 +41,6 @@ export default function PhotoInfoPanel({ photo, isOpen }: Props) {
   });
 
   const openModal = () => {
-    //Prefetching the user tags in case the user wants to add to tags
-    queryClient.prefetchQuery({
-      queryKey: ["userTags"],
-      queryFn: () => api.tags.getTagsForUser(),
-    });
     setTagsModalOpen(true);
   };
 

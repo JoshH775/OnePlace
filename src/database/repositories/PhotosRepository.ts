@@ -1,4 +1,4 @@
-import { and, eq, gt, lt } from "drizzle-orm";
+import { and, eq, gt, inArray, like, lt } from "drizzle-orm";
 import { db } from "../initDB";
 import { collectionPhotosTable, photosTable, photoTagsTable, tagsTable } from "../schema";
 import { Filters, Photo, ProtoPhoto, Tag, UpdatablePhotoProperties } from "@shared/types";
@@ -88,18 +88,45 @@ export default class PhotosRepository {
     }).from(photosTable).where(eq(photosTable.userId, userId)).$dynamic()
 
     function withFilters<T extends MySqlSelect>(qb: T, filters: Filters) {
-      const { collectionId, dateRange, uploadDateRange } = filters
+      const { collectionIds, dateRange, uploadDateRange, name, tags } = filters
 
-      if (collectionId) {
-       qb.leftJoin(collectionPhotosTable, eq(collectionPhotosTable.photoId, photosTable.id)).where(eq(collectionPhotosTable.collectionId, collectionId))
+      
+      if (collectionIds && collectionIds.length > 0) {
+        qb.innerJoin(collectionPhotosTable, eq(collectionPhotosTable.photoId, photosTable.id)).where(
+          and(
+            eq(photosTable.userId, userId),
+            inArray(collectionPhotosTable.collectionId, collectionIds)
+          )
+
+        )
       }
 
-      if (dateRange) {
-        qb.where(and(gt(photosTable.date, dateRange.min), lt(photosTable.date, dateRange.max)))
+      if (name) {
+        qb.where(like(photosTable.filename, `%${name}%`))
       }
 
-      if (uploadDateRange) {
-        qb.where(and(gt(photosTable.createdAt, uploadDateRange.min), lt(photosTable.createdAt, uploadDateRange.max)))
+      if (tags && tags.length > 0) {
+        qb.innerJoin(tagsTable, inArray(tagsTable.id, tags.map((tag) => tag.id))).innerJoin(photoTagsTable, eq(photoTagsTable.tagId, tagsTable.id)).where(
+            eq(photoTagsTable.photoId, photosTable.id)
+        )
+      }
+
+      if (dateRange && (dateRange.min || dateRange.max)) {
+        if (dateRange.min) {
+          qb.where(gt(photosTable.date, dateRange.min))
+        }
+        if (dateRange.max) {
+          qb.where(lt(photosTable.date, dateRange.max))
+        }
+      }
+
+      if (uploadDateRange && (uploadDateRange.min || uploadDateRange.max)) {
+        if (uploadDateRange.min) {
+          qb.where(gt(photosTable.createdAt, uploadDateRange.min))
+        }
+        if (uploadDateRange.max) {
+          qb.where(lt(photosTable.createdAt, uploadDateRange.max))
+        }
       }
 
       return qb

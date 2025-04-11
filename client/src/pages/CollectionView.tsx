@@ -22,13 +22,8 @@ export default function CollectionView() {
 
   const { data, isError } = useSuspenseQuery({
     queryKey: ["collection", id],
-    queryFn: async () => {
-      const collection = await api.collections.getCollectionById(parseInt(id!));
-      const photos = await api.collections.getPhotosForCollection(parseInt(id!));
-
-      return { collection, photos };
-    }
-  });
+    queryFn: async () => await api.collections.getCollectionById(parseInt(id!))    })
+  
 
   const { mutateAsync: deleteMutation } = useMutation({
     mutationFn: async () => api.collections.deleteCollection(id!)
@@ -54,7 +49,7 @@ export default function CollectionView() {
 
   return (
     <Suspense fallback={<Spinner />}>
-      {isError || !data.collection ? (
+      {isError || !data ? (
         <div className="flex-grow flex justify-center items-center font-bold text-3xl w-full">
           Collection not found!
         </div>
@@ -64,7 +59,7 @@ export default function CollectionView() {
 
             <span className="justify-between w-full">
             <p className="text-3xl font-bold indigo-underline mb-3">
-            {data.collection.name}
+            {data.name}
           </p>
           <Button
             variant="danger"
@@ -74,11 +69,11 @@ export default function CollectionView() {
             </span>
 
           <p className="dark:text-subtitle-dark text-subtitle-light mb-2">
-            {data.collection.description}
+            {data.description}
           </p>
 
           <PhotoGallery
-            photos={data.photos}
+            filters={{ collectionIds: [Number(id)] }}
             selectMode={false}
         />
         </div>
