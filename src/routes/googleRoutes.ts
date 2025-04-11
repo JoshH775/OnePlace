@@ -89,7 +89,7 @@ export function registerGoogleRoutes(server: FastifyInstance) {
   }
 
 
-  export async function uploadPhotoToGoogle(userId: number, fileDataArray: { file: Buffer, metadata: Photo | ProtoPhoto }[]): Promise<boolean> {
+  export async function uploadPhotoToGoogles(userId: number, fileDataArray: { file: Buffer, metadata: Photo | ProtoPhoto }[]): Promise<boolean> {
     try {
       const token = await getValidAccessToken(userId);
   
