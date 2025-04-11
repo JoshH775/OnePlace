@@ -1,7 +1,7 @@
 import { Collection } from "@shared/types";
 import { db } from "../initDB";
 import { collectionPhotosTable, collectionsTable } from "../schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export default class CollectionsRepository {
 
@@ -56,5 +56,9 @@ export default class CollectionsRepository {
 
   async delete(collectionId: number) {
     await db.delete(collectionsTable).where(eq(collectionsTable.id, collectionId));
+  }
+
+  async setLastAccessed(collectionId: number, userId: number) {
+    await db.update(collectionsTable).set({ lastAccessed: new Date().toISOString() }).where(and(eq(collectionsTable.id, collectionId), eq(collectionsTable.userId, userId)));
   }
 }

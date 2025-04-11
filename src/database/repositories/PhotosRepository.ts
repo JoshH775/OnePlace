@@ -166,5 +166,9 @@ export default class PhotosRepository {
     await db.delete(photoTagsTable).where(and(eq(photoTagsTable.photoId, photoId), eq(photoTagsTable.tagId, tagId)))
 }
 
+  async setLastAccessed(photoId: number, userId: number) {
+    await db.update(photosTable).set({ lastAccessed: new Date().toISOString() }).where(and(eq(photosTable.id, photoId), eq(photosTable.userId, userId)))
+  }
+
   
 }
