@@ -25,29 +25,34 @@ export default function UploadPhotosModal({ isOpen, onClose }: Props) {
       acceptedFiles,
       compress,
     }: {
-      acceptedFiles: { file: File; metadata: ProtoPhoto }[];
-      compress: boolean;
+      acceptedFiles: { file: File; metadata: ProtoPhoto }[]; // Array of files with their metadata
+      compress: boolean; // Whether to compress files before upload
     }) => {
-      //Performing chunking before sending through api
+      // Calculate the total size of all files
       const totalSize = acceptedFiles.reduce(
         (acc, { file }) => acc + file.size,
         0
       );
 
+      // If the total size exceeds the chunk size, split the files into chunks
       if (totalSize > CHUNK_SIZE) {
         const chunks = _.chunk(
           acceptedFiles,
-          Math.ceil(acceptedFiles.length / 2)
+          Math.ceil(acceptedFiles.length / 2) // Split into two chunks
         );
 
+        // Upload each chunk in parallel and wait for all to complete
         const results = await Promise.allSettled(
           chunks.map((chunk) => api.photos.uploadPhotos(chunk, compress))
         );
+
+        // Check if all uploads were successful
         const allSuccess = results.every(
           (result) => result.status === "fulfilled"
         );
         return allSuccess;
       } else {
+        // If total size is within the limit, upload all files at once
         return api.photos.uploadPhotos(acceptedFiles, compress);
       }
     },
@@ -140,6 +145,25 @@ async function validateFileForUpload(
   return { valid: true, type: tags["FileType"].value, tags };
 }
 
+/**
+ * Parses metadata from a given file and validates it for upload.
+ *
+ * @param file - The file to be parsed and validated.
+ * @returns A promise that resolves to an object containing:
+ *          - `valid`: A boolean indicating whether the file is valid for upload.
+ *          - `metadata`: A `ProtoPhoto` object containing the parsed metadata if valid, or `null` if invalid.
+ *
+ * The metadata includes:
+ * - `filename`: The name of the file.
+ * - `location`: A string representing the GPS coordinates (latitude/longitude/altitude) if available, or `null`.
+ * - `alias`: Always `null` (reserved for future use).
+ * - `compressed`: A boolean indicating whether the file is compressed (always `false`).
+ * - `size`: The size of the file in bytes.
+ * - `date`: The formatted date the photo was taken, or `null` if unavailable or invalid.
+ * - `type`: The MIME type of the file (e.g., `image/jpeg`).
+ *
+ * The function uses EXIF tags to extract GPS and date information, and validates the date using predefined formats.
+ */
 async function parseFileMetadata(
   file: File
 ): Promise<{ valid: boolean; metadata: ProtoPhoto | null }> {

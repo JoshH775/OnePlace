@@ -155,6 +155,15 @@ const authAPI = {
 };
 
 const photosAPI = {
+  /**
+   * Uploads an array of photos with associated metadata to the server.
+   * Optionally compresses the photos before uploading.
+   * 
+   * @param fileDataArray - Array of objects containing the file and its metadata.
+   * @param compress - Whether to compress the photos before uploading. Defaults to true.
+   * @returns A promise that resolves to true if the upload is successful.
+   * @throws An error if the upload fails.
+   */
   async uploadPhotos(
     fileDataArray: { file: File; metadata: ProtoPhoto }[],
     compress: boolean = true
@@ -162,30 +171,38 @@ const photosAPI = {
     try {
       const formData = new FormData();
 
+      // Iterate over the array of files and metadata
       for (let i = 0; i < fileDataArray.length; i++) {
         const { file, metadata } = fileDataArray[i];
+
+        // Compress the file if the compress flag is true
         const fileToUpload = compress ? await compressPhoto(file) : file;
 
+        // Format the date in the metadata if it exists
         if (metadata.date) {
           metadata.date = moment(metadata.date).format("YYYY-MM-DD HH:mm:ss");
         }
 
+        // Append the file and metadata to the FormData object
         formData.append(`file_${i}`, fileToUpload);
         formData.append(`metadata_${i}`, JSON.stringify(metadata));
       }
 
+      // Make the API request to upload the photos
       const response = await fetch("/api/photos/upload", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
 
+      // Check if the response is successful
       if (!response.ok) {
         throw new Error("Failed to upload photos. Check response." + response);
       }
 
       return true;
     } catch (error) {
+      // Log and rethrow the error if the upload fails
       console.error("Error during photo upload:", error);
       throw error;
     }
