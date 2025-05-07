@@ -12,19 +12,19 @@ export function registerUserRoutes(server: FastifyInstance) {
     const user = request.user as User;
     const integrations = await getAllIntegrationsForUser(user.id, false);
     const settings = await Settings.getAllForUser(user.id);
-    return { user, integrations, settings };
+    return reply.send({ user, integrations, settings });
   });
 
   server.get("/api/user/settings", async (request, reply) => {
     const user = request.user as User;
     const settings = await Settings.getAllForUser(user.id);
-    return settings;
+    return reply.send(settings);
   });
 
   server.post("/api/user/settings", async (request, reply) => {
       const user = request.user as User;
       const { key, value } = request.body as { key: UserSettingsKeysType; value: string };
       await Settings.setUserSetting(user.id, key, value);
-      return reply.status(204)
+      return reply.status(204).send();
 })
 }

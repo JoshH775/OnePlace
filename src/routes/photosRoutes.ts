@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import PhotosRepository from "../database/repositories/PhotosRepository";
 import { storage } from "../firebase";
 import { MultipartValue } from "@fastify/multipart";
-import { uploadPhotoToGoogles } from "./googleRoutes";
+import { uploadPhotoToGoogle } from "./googleRoutes";
 import { Filters, Photo, ProtoPhoto, User } from "@shared/types";
 import sharp from "sharp";
 import { asyncHandler } from "..";
@@ -14,37 +14,45 @@ const GoogleIntegrations = new GoogleIntegrationRepository();
 const Settings = new SettingsRepository();
 
 export default function registerPhotosRoutes(server: FastifyInstance) {
+  // Route to fetch a photo by its ID
   server.get(
     "/api/photos/:id",
     asyncHandler(async (req, res) => {
-      const { id: userId } = req.user as User;
-      const { id } = req.params as { id: string };
+      const { id: userId } = req.user as User; // Extract the user ID from the authenticated user
+      const { id } = req.params as { id: string }; // Extract the photo ID from the request parameters
       const { thumbnail, download } = req.query as {
         thumbnail?: string;
         download?: string;
-      };
+      }; // Extract query parameters for thumbnail and download options
+
+      // Fetch the photo from the database by its ID and the user's ID
       const photo = await Photos.getById(parseInt(id), userId);
 
+      // If the photo is not found, return a 404 error
       if (!photo) {
         return res.status(404).send({ error: "Photo not found" });
       }
 
+      // Determine the file path based on whether the thumbnail is requested
       const path =
         thumbnail === "true"
-          ? `users/${userId}/thumbnails/${photo.filename}`
-          : `users/${userId}/${photo.filename}`;
-      const file = storage.bucket().file(path);
+          ? `users/${userId}/thumbnails/${photo.filename}` // Path for the thumbnail
+          : `users/${userId}/${photo.filename}`; // Path for the original photo
+      const file = storage.bucket().file(path); // Get the file from the storage bucket
 
+      // If the download option is enabled, send the file buffer as a response
       if (download === "true") {
         const [buffer] = await file.download();
         return res.send(buffer);
       }
 
+      // Generate a signed URL for the file with a 15-minute expiration
       const [url] = await file.getSignedUrl({
         action: "read",
         expires: Date.now() + 15 * 60 * 1000,
       });
 
+      // Redirect the client to the signed URL
       return res.redirect(url);
     })
   );
@@ -103,7 +111,7 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
         (await Settings.getUserSetting("google_auto_upload", userId)) &&
         (await GoogleIntegrations.findByUserId(userId));
       if (sendToGoogle) {
-        uploadPhotoToGoogles(userId, files);
+        uploadPhotoToGoogle(userId, files);
       }
 
       return res.status(201).send();

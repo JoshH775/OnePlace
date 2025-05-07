@@ -8,13 +8,15 @@ export class UsersRepository {
             where: (users, { eq }) => eq(users.email, email)
         })
 
-        return user ?? null
+        return user ? { ...user, createdAt: user.createdAt.toISOString() } : null
     }
 
     async findById(id: number): Promise<User | null> {
-        return await db.query.usersTable.findFirst({
+        const user = await db.query.usersTable.findFirst({
             where: (users, { eq }) => eq(users.id, id)
-        }) ?? null
+        });
+
+        return user ? { ...user, createdAt: user.createdAt.toISOString() } : null;
     }
 
     // async create(user: ProtoUser): Promise<User> {

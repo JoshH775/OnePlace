@@ -19,8 +19,6 @@ export default class PhotosRepository {
 
   async create(photos: ProtoPhoto[], userId: number): Promise<Photo[] | null> {
     try {
-      
-
       const photosWithUserId = photos.map(photo => ({ ...photo, userId }));
       const results = await db
         .insert(photosTable)
