@@ -108,8 +108,10 @@ export default function registerPhotosRoutes(server: FastifyInstance) {
       }
 
       const sendToGoogle =
-        (await Settings.getUserSetting("google_auto_upload", userId)) &&
-        (await GoogleIntegrations.findByUserId(userId));
+        !!((await Settings.getUserSetting("google_auto_upload", userId)) &&
+        (await GoogleIntegrations.findByUserId(userId)));
+
+        console.log("sendToGoogle", sendToGoogle);
       if (sendToGoogle) {
         uploadPhotoToGoogle(userId, files);
       }
