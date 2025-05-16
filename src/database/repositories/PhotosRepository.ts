@@ -1,9 +1,11 @@
-import { and, eq, gt, inArray, like, lt } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull, like, lt } from "drizzle-orm";
 import { db } from "../initDB";
 import { collectionPhotosTable, photosTable, photoTagsTable, tagsTable } from "../schema";
 import { Filters, Photo, ProtoPhoto, Tag, UpdatablePhotoProperties } from "@shared/types";
 import { MySqlSelect } from "drizzle-orm/mysql-core";
 import TagRepository from "./TagsRepository";
+import moment from "moment";
+import { TimestampFormat } from "@shared/constants";
 
 const Tags = new TagRepository()
 
@@ -86,6 +88,7 @@ export default class PhotosRepository {
     }).from(photosTable).where(eq(photosTable.userId, userId)).$dynamic()
 
     function withFilters<T extends MySqlSelect>(qb: T, filters: Filters) {
+      console.log("Filters: ", filters)
       const { collectionIds, dateRange, uploadDateRange, name, tags } = filters
 
       
@@ -110,21 +113,46 @@ export default class PhotosRepository {
       }
 
       if (dateRange && (dateRange.min || dateRange.max)) {
+        const dateConditions = [];
+
         if (dateRange.min) {
-          qb.where(gt(photosTable.date, dateRange.min))
+          const minDate = moment(dateRange.min, "YYYY-MM-DD")
+            .startOf("day")
+            .format(TimestampFormat);
+          dateConditions.push(gt(photosTable.date, minDate));
         }
+
         if (dateRange.max) {
-          qb.where(lt(photosTable.date, dateRange.max))
+          const maxDate = moment(dateRange.max, "YYYY-MM-DD")
+            .endOf("day")
+            .format(TimestampFormat);
+          dateConditions.push(lt(photosTable.date, maxDate));
         }
+
+        dateConditions.push(isNotNull(photosTable.date));
+        qb.where(and(...dateConditions));
       }
 
       if (uploadDateRange && (uploadDateRange.min || uploadDateRange.max)) {
+        const uploadConditions = [];
+
         if (uploadDateRange.min) {
-          qb.where(gt(photosTable.createdAt, uploadDateRange.min))
+          const minDate = moment(uploadDateRange.min, "YYYY-MM-DD")
+            .startOf("day")
+            .format(TimestampFormat);
+          uploadConditions.push(gt(photosTable.createdAt, minDate));
         }
+
         if (uploadDateRange.max) {
-          qb.where(lt(photosTable.createdAt, uploadDateRange.max))
+          const maxDate = moment(uploadDateRange.max, "YYYY-MM-DD")
+            .endOf("day")
+            .format(TimestampFormat);
+          uploadConditions.push(lt(photosTable.createdAt, maxDate));
         }
+
+        uploadConditions.push(isNotNull(photosTable.createdAt));
+
+        qb.where(and(...uploadConditions));
       }
 
       return qb
