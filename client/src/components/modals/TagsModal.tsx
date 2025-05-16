@@ -83,6 +83,7 @@ export default function TagsModal({ isOpen, onClose, currentTags }: Props) {
     if (existing) {
       queryClient.setQueryData(["photoTags", photoId], (prev: Tag[]) => [...prev, existing]);
       await addTagMutation({ name, color });
+      setQuery("");
       return;
     } else {
       const allTags = await addTagMutation({ name, color });

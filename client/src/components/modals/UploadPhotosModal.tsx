@@ -145,34 +145,17 @@ async function validateFileForUpload(
   return { valid: true, type: tags["FileType"].value, tags };
 }
 
-/**
- * Parses metadata from a given file and validates it for upload.
- *
- * @param file - The file to be parsed and validated.
- * @returns A promise that resolves to an object containing:
- *          - `valid`: A boolean indicating whether the file is valid for upload.
- *          - `metadata`: A `ProtoPhoto` object containing the parsed metadata if valid, or `null` if invalid.
- *
- * The metadata includes:
- * - `filename`: The name of the file.
- * - `location`: A string representing the GPS coordinates (latitude/longitude/altitude) if available, or `null`.
- * - `alias`: Always `null` (reserved for future use).
- * - `compressed`: A boolean indicating whether the file is compressed (always `false`).
- * - `size`: The size of the file in bytes.
- * - `date`: The formatted date the photo was taken, or `null` if unavailable or invalid.
- * - `type`: The MIME type of the file (e.g., `image/jpeg`).
- *
- * The function uses EXIF tags to extract GPS and date information, and validates the date using predefined formats.
- */
 async function parseFileMetadata(
   file: File
 ): Promise<{ valid: boolean; metadata: ProtoPhoto | null }> {
+  // Validate the file type and extract EXIF tags
   const { valid, type, tags } = await validateFileForUpload(file);
 
   if (!valid) {
     return { valid, metadata: null };
   }
 
+  // Extract GPS coordinates (latitude, longitude, altitude) if available
   const latitude = tags["GPSLatitude"]?.description as number | undefined;
   const longitude = tags["GPSLongitude"]?.description as number | undefined;
 
@@ -187,9 +170,9 @@ async function parseFileMetadata(
     }
   }
 
+  // Extract and format the date the photo was taken, if available
   let date = null;
   const dateTaken = tags["DateTimeOriginal"] || tags["DateCreated"];
-
   const possibleFormats = ["YYYY:MM:DD HH:mm:ss", "YYYY-MM-DDTHH:mm:ss.SS"];
 
   if (dateTaken) {
@@ -199,11 +182,12 @@ async function parseFileMetadata(
     }
   }
 
+  // Construct the metadata object
   const metadata: ProtoPhoto = {
     filename: file.name,
     location: location,
-    alias: null,
-    compressed: false,
+    alias: null, // Reserved for future use
+    compressed: false, // Always false for now
     size: file.size,
     date: date || null,
     type: `image/${type}`,
