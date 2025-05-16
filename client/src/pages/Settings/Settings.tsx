@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../components/AuthProvider";
 import api from "../../utils/api";
 import Panel from "../../components/ui/Panel";
@@ -17,6 +17,8 @@ export default function Settings() {
   const { updateUser, logout } = useAuth();
   const settings = user.settings;
   const integrations = user.integrations;
+
+  const queryClient = useQueryClient();
 
   const { mutate: disconnectIntegrationMutation, isPending } = useMutation({
     mutationFn: (integration: string) => api.auth.disconnectIntegration(integration),
@@ -73,7 +75,9 @@ export default function Settings() {
         success: "Photos deleted successfully",
         error: "Failed to delete photos",
       }
-    )  };
+    )
+  queryClient.invalidateQueries({ queryKey: ["photos"] });
+  };
 
   const deleteAccount = () => {
     console.log("delete account");
