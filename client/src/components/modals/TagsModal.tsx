@@ -143,11 +143,11 @@ export default function TagsModal({ isOpen, onClose, currentTags }: Props) {
   
 
   const filteredTags =
-    userTags?.filter(
+    (userTags || []).filter(
       (tag) =>
-        tag.name.includes(query.toLowerCase()) &&
-        !currentTags.some((photoTag) => photoTag.id === tag.id)
-    ) || [];
+        tag.name.toLowerCase().includes(query.toLowerCase()) &&
+        (currentTags || []).every((photoTag) => photoTag.id !== tag.id)
+    );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Tags">
