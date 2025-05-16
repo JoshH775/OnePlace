@@ -50,6 +50,7 @@ export default function AddToCollectionModal({
     e.preventDefault();
     toast.loading("Adding to collection...");
     if (!selectedCollection) {
+      toast.dismiss()
       toast.error("Please select a collection");
       return;
     }
