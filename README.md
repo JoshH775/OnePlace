@@ -17,3 +17,10 @@ OnePlace is a cloud storage photo manager focused on effective library managemen
 ## API Endpoint Structure
 
 Photo management endpoints are implemented in [`src/routes/photosRoutes.ts`](src/routes/photosRoutes.ts), including:
+- `GET /api/photos/:id` – Get a photo or signed URL
+- `POST /api/photos/upload` – Upload photos
+- `POST /api/photos` – Main endpoint for bulk photo retrieval using filters in the body
+- `PUT /api/photos` – Update photo metadata
+- `DELETE /api/photos/:id` – Delete a photo
+
+Other entities like **Tags** and **Collections** follow a similar structure.
